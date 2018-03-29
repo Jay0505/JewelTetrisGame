@@ -8,14 +8,12 @@ from random import randint
 
 def run_game():
 
-	redFlag = False
 	pygame.init()
-
 	settings = Settings()
-
-	currentJewelsGroup = Group()
 	screen = pygame.display.set_mode((settings.screenWidth, settings.screenHeight))
 	screen.fill((150, 150, 150))
+
+	currentJewelsGroup = Group()
 
 	while True:
 

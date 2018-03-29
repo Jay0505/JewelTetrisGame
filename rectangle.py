@@ -19,8 +19,10 @@ class Rectangle(Sprite):
 		self.centerX = float(self.rect.centerx)
 		self.centerY = float(self.rect.centery)
 
-		self.movingRight = False
-		self.movingLeft = False
+		self.movingRight = True
+		self.movingLeft = True
+		self.moveDown = True
+		self.reachedBottom = False
 		
 
 	############################################
@@ -41,6 +43,7 @@ class Rectangle(Sprite):
 			newrect.blitme()
 		else:
 			self.settings.anyJewelReachedBottom = True
+			self.reachedBottom = True
 
 
 
