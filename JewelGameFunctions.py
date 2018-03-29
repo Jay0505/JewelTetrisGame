@@ -6,6 +6,27 @@ from random import randint
 from rectangle import Rectangle
 
 
+################################# Settings #################################################
+'''
+-- Whenever a jewelGroup reached bottom, we have to create a new jewelGroup without disturbing the earlier jewelGroup which
+reached the bottom of the screen.
+
+-- So, before creating a new jewelGroup, we reset the important settings which are responsible for the behaviour and creation
+of the jewels.
+'''
+def resetAllTheSettings(settings):
+	# Jewel settings
+	settings.jewels.empty()
+	settings.jewelVerticalOrHorizontal = 1 # vertical = 0; Horizontal = 1
+	settings.jewelType = 1
+	settings.jewelsLimit = 4
+	settings.jewelDirection = 1
+	settings.jewelMovingRight = False
+	settings.jewelMovingLeft = False
+	settings.anyJewelReachedEdge = False
+	settings.anyJewelReachedBottom = False
+
+
 
 ######################################## KEY EVENTS ###########################################
 
@@ -67,15 +88,52 @@ def keyUpEvents(settings, screen, event, jewels):
 
 ####################### JEWEL FUNCTIONS ########################################################
 
-def createJewelGroup(settings, screen, jewelType, jewelVerticalOrHorizontal, jewels):
+
+def determineJewelType(settings):
+	settings.jewelType = randint(1, settings.jewelType)
+
+	
+############################################
+def determineVerticallyOrHorizontallyAlignedJewels(settings):
+	settings.jewelVerticalOrHorizontal = randint(0, settings.jewelVerticalOrHorizontal)
+	
+
+############################################
+def determineJewelTypeAlignmentAndThenCreateJewelGroup(settings, screen):
+
+	determineJewelType(settings)
+	determineVerticallyOrHorizontallyAlignedJewels(settings)
+	createJewelGroup(settings, screen)
+
+############################################
+def funcResponsibleForMovementOfJewelsAndScreenUpdate(settings, currentJewelsGroup, screen):
+	jewelType = settings.jewelType
+	jewelVerticalOrHorizontal = settings.jewelVerticalOrHorizontal
+	jewels = settings.jewels
+	checkEvents(settings, screen, jewels) # Checks for any key press or release events
+	forwardJewels(settings, jewels, jewelType) # move the jewels in the downward direction
+	moveJewels(settings, screen, jewels) # move the jewels either right or left based upon the key pressed
+	updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup) # updates the screen with the latest positions of the jewels
+
+############################################
+def funcResponsibleForCreationAndMovementOfJewels(settings, currentJewelsGroup, screen):
+	determineJewelTypeAlignmentAndThenCreateJewelGroup(settings, screen)
+	funcResponsibleForMovementOfJewelsAndScreenUpdate(settings, currentJewelsGroup, screen)
+
+
+############################################
+def createJewelGroup(settings, screen):
+	jewelType = settings.jewelType
+	jewelVerticalOrHorizontal = settings.jewelVerticalOrHorizontal
+	jewels = settings.jewels
 	if jewelVerticalOrHorizontal == 1:
 		createHorizontallyAlignedJewels(settings, screen, jewelType, jewels)
 	else:
 		settings.jewelVerticalOrHorizontal = 0
 		createVerticallyAlignedJewels(settings, screen, jewelType, jewels)
 
-#########
 
+############################################
 def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 	numberOfJewels = fixTheNumberOfJewelsToBeFormed(settings)
 	yCoordinate = 0
@@ -91,6 +149,7 @@ def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 		jewels.add(rectangle)
 
 
+############################################
 def createHorizontallyAlignedJewels(settings, screen, jewelType, jewels):
 	numberOfJewels = fixTheNumberOfJewelsToBeFormed(settings)
 	xCoordinate = 250
@@ -104,25 +163,23 @@ def createHorizontallyAlignedJewels(settings, screen, jewelType, jewels):
 
 		jewels.add(rectangle)
 
+
+############################################
 def fixTheNumberOfJewelsToBeFormed(settings):
 	numberOfJewels = randint(1, settings.jewelsLimit)
-	print(numberOfJewels)
 	return numberOfJewels
 
+
+############################################
 '''
 -- This function is responsible for the downward movement of the jewel. Update is the method in the respective jewel class.
 If we write jewels.update(), then the update method is applied on each and every jewel in the jewels group.
 '''
 def forwardJewels(settings, jewels, jewelType):
-	# if settings.jewelVerticalOrHorizontal == 1:
-	# 	jewels.update()
-	# else:
-	# 	for jewel in jewels.sprites():
-	# 		jewel.rect.y += 2
 	jewels.update()
 
-#########
 
+############################################
 def moveJewels(settings, screen, jewels):
 	didJewelGroupReachedBottom = checkIfTheJewelGroupReachedBottom(jewels)
 	if not didJewelGroupReachedBottom:
@@ -135,8 +192,8 @@ def moveJewels(settings, screen, jewels):
 				jewel.rect.x += (3 * settings.jewelDirection)
 
 				
-############	
 
+############################################
 def anyJewelReachedEdge(settings, screen, jewels):
 	screenRect = screen.get_rect()
 	returnValue = False
@@ -153,39 +210,49 @@ def anyJewelReachedEdge(settings, screen, jewels):
 
 	return returnValue
 
-
+############################################
 def checkIfTheJewelGroupReachedBottom(jewels):
 	for jewel in jewels.sprites():
 		if jewel.settings.anyJewelReachedBottom:
 			return True
 
 
-def groupTheBottomReachedJewelsIntoOne(jewels, settings):
-	for jewel in jewels.sprites():
-		settings.bottomReachedJewelsAsaGroup.add(jewel)
-	jewels.empty()
+############################################
+def groupTheBottomReachedJewelsIntoOne(settings, currentJewelsGroup):
+	for jewel in settings.jewels.sprites():
+		currentJewelsGroup.add(jewel)
 	
 			
 
-########################### SCREEN UPDATES ####################################################
+######################################################## SCREEN UPDATES ####################################################
 
-def updateScreen(settings, screen, jewelType, jewels):
+'''
+-- To give the notion of a free movement of jewels, after jewels making a movement (either downwards or sidewards) we fill the 
+screen again with the background color.
+
+-- During that time, jewels which were present earlier would be cleared and we would be offered a clear empty screen.
+
+-- To prevent the game from this, after filling the screen with backgroud color, we blit (draw) the jewels in the jewelsGroup with 
+the recent and updated co-ordinates using blit method
+
+-- whenever a jewelGroup reached the bottom, they would be saved in the currentJewelsGroup present in NewValuesForNewJewels class
+
+-- pygame.display.flip() method updates the screen with the recent updates.
+'''
+
+def updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup):
 	screen.fill(settings.backgroundColor)
 	if jewelType == 1:
 		for rectangle in jewels.sprites():
 			rectangle.blitme()
+
+		if len(currentJewelsGroup) != 0:
+			for rectangle in currentJewelsGroup.sprites():
+				rectangle.blitme()
+
 	pygame.time.delay(100)
 	pygame.display.flip()
-	# if not checkIfTheJewelGroupReachedBottom(jewels):
-	# 	screen.fill(settings.backgroundColor)
-	# 	if jewelType == 1:
-	# 		for rectangle in jewels.sprites():
-	# 			rectangle.blitme()
-	# 	pygame.time.delay(100)
-	# else:
-	# 	groupTheBottomReachedJewelsIntoOne(jewels, settings)
 
-	# pygame.display.flip()
 
 
 

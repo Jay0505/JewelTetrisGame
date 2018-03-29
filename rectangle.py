@@ -23,29 +23,22 @@ class Rectangle(Sprite):
 		self.movingLeft = False
 		
 
+	############################################
 	def blitme(self):
 		#self.screen.blit(self.image, self.rect)
 		pygame.draw.rect(self.screen, (230, 230, 230), self.rect)
 
+
+	############################################
 	def update(self):
-		# if self.settings.jewelVerticalOrHorizontal == 1:
-		# 	self.moveWhenHorizontallyAligned()
-		# else:
-		# 	self.moveWhenVerticallyAligned()
 
-
-		# screenRect = self.screen.get_rect()
-
-		# if self.rect.bottom < screenRect.bottom:
-		# 	self.y += self.settings.jewelSpeedFactor
-		# 	self.rect.y = self.y
-
-		# 	self.centerY += self.settings.jewelSpeedFactor
-		# 	self.rect.centery = self.centerY
 		screenRect = self.screen.get_rect()
 
 		if (not self.settings.anyJewelReachedBottom) and self.rect.bottom < screenRect.bottom:
-			self.rect.y += 2
+			self.rect.y += 3
+			newrect = Rectangle(self.screen, self.settings)
+			newrect.rect.y = self.rect.y
+			newrect.blitme()
 		else:
 			self.settings.anyJewelReachedBottom = True
 

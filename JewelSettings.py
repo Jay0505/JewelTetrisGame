@@ -4,6 +4,8 @@ class Settings(object):
 	"""docstring for Settings"""
 	def __init__(self):
 		super().__init__()
+		self.jewels = Group()
+		self.isFirstIteration = True
 		self.screenWidth = 500
 		self.screenHeight = 500
 		self.backgroundColor = (120, 120, 120)
