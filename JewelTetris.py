@@ -11,7 +11,12 @@ def run_game():
 	pygame.init()
 	settings = Settings()
 	screen = pygame.display.set_mode((settings.screenWidth, settings.screenHeight))
+	screenRe = screen.get_rect()
 	screen.fill((150, 150, 150))
+	print('bottom ' + str(screenRe.bottom))
+	print('top ' + str(screenRe.top))
+	print('left ' + str(screenRe.left))
+	print('right ' + str(screenRe.right))
 
 	currentJewelsGroup = Group()
 
@@ -23,7 +28,8 @@ def run_game():
 			jgf.funcResponsibleForCreationAndMovementOfJewels(settings, currentJewelsGroup, screen)
 
 		else:
-			if jgf.checkIfTheJewelGroupReachedBottom(settings.jewels):
+			# if jgf.checkIfTheJewelGroupReachedBottom(settings.jewels):
+			if settings.anyJewelReachedBottom:
 				
 				jgf.groupTheBottomReachedJewelsIntoOne(settings, currentJewelsGroup)
 				jgf.resetAllTheSettings(settings)

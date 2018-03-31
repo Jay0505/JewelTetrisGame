@@ -1,5 +1,6 @@
 import pygame
 from pygame.sprite import Sprite
+from random import randint
 
 class Rectangle(Sprite):
 	"""docstring for Rectangle"""
@@ -10,7 +11,7 @@ class Rectangle(Sprite):
 		self.width = 30
 		self.height = 20
 		rectangleImage = pygame.image.load('images/rectangle.bmp')
-		self.image = pygame.transform.scale(rectangleImage, (self.width, self.height))
+		self.image = pygame.transform.scale(rectangleImage, (self.settings.jewelWidth, self.settings.jewelHeight))
 
 		self.rect = self.image.get_rect()
 
@@ -23,12 +24,20 @@ class Rectangle(Sprite):
 		self.movingLeft = True
 		self.moveDown = True
 		self.reachedBottom = False
+		self.jewelColor = randint(0, self.settings.colorOfJewels - 1)
 		
 
 	############################################
 	def blitme(self):
 		#self.screen.blit(self.image, self.rect)
-		pygame.draw.rect(self.screen, (230, 230, 230), self.rect)
+		if self.jewelColor == 0:
+			pygame.draw.rect(self.screen, (255, 0, 0), self.rect)
+		elif self.jewelColor == 1:
+			pygame.draw.rect(self.screen, (0, 0, 0), self.rect)
+		elif self.jewelColor == 2:
+			pygame.draw.rect(self.screen, (2, 0, 182), self.rect)
+		elif self.jewelColor == 3:
+			pygame.draw.rect(self.screen, (249, 158, 2), self.rect)
 
 
 	############################################
@@ -36,8 +45,8 @@ class Rectangle(Sprite):
 
 		screenRect = self.screen.get_rect()
 
-		if (not self.settings.anyJewelReachedBottom) and self.rect.bottom < screenRect.bottom:
-			self.rect.y += 3
+		if (not self.settings.anyJewelReachedBottom) and self.rect.bottom < screenRect.bottom - self.settings.jewelHeight:
+			self.rect.y += self.settings.jewelHeight 
 			newrect = Rectangle(self.screen, self.settings)
 			newrect.rect.y = self.rect.y
 			newrect.blitme()

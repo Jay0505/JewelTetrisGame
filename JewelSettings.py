@@ -11,9 +11,12 @@ class Settings(object):
 		self.backgroundColor = (120, 120, 120)
 
 		# Jewel settings
+		self.jewelWidth = 30
+		self.jewelHeight = 20
 		self.jewelVerticalOrHorizontal = 1 # vertical = 0; Horizontal = 1
+		self.colorOfJewels = 4
 		self.jewelType = 1
-		self.jewelSpeedFactor = 1
+		self.jewelSpeedFactor = self.jewelWidth
 		self.jewelsLimit = 4
 		self.jewelDirection = 1
 		self.jewelMovingRight = False
@@ -21,7 +24,8 @@ class Settings(object):
 		self.anyJewelReachedEdge = False
 		self.anyJewelReachedBottom = False
 
-		self.bottomReachedJewelsAsaGroup = Group()
+		#self.bottomReachedJewelsAsaGroup = Group()
+		self.probableXCoordinates = []
 
 
 		

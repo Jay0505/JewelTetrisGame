@@ -89,6 +89,27 @@ def keyUpEvents(settings, screen, event, jewels):
 ####################### JEWEL FUNCTIONS ########################################################
 
 
+def determineTheProbableXCoordinatesForTheNewlyFormedJewels(settings):
+	numberOfSegments = determineTheNumberOfSegmentsThatScreenCanBeDividedInto(settings)
+	AcceptableXCoordinates = []
+	for number in range(numberOfSegments):
+		AcceptableXCoordinates.append((number * settings.jewelWidth))
+
+	return AcceptableXCoordinates
+
+
+def determineTheXCoordinateOfTheNewlyFormedJewel(settings):
+	AcceptableXCoordinates = determineTheProbableXCoordinatesForTheNewlyFormedJewels(settings)
+	numberOfSegments = determineTheNumberOfSegmentsThatScreenCanBeDividedInto(settings)
+	indexOfTheXCoordinate = randint(0, numberOfSegments - 1)
+	#print('The present index is ' + str(indexOfTheXCoordinate) + ' and the nos ' + str(numberOfSegments))
+	#print('len of Acce ' + str(len(AcceptableXCoordinates)) + ' indexOfTheXCoordinate ' + str(indexOfTheXCoordinate) )
+	xCoordinate = AcceptableXCoordinates[indexOfTheXCoordinate]
+
+	return xCoordinate
+
+
+############################################
 def determineJewelType(settings):
 	settings.jewelType = randint(1, settings.jewelType)
 
@@ -137,14 +158,17 @@ def createJewelGroup(settings, screen):
 def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 	numberOfJewels = fixTheNumberOfJewelsToBeFormed(settings)
 	yCoordinate = 0
-	xCoordinate = 250
-	for number in range(numberOfJewels - 1, -1, -1):
+	#xCoordinate = 250
+	xCoordinate = determineTheXCoordinateOfTheNewlyFormedJewel(settings)
+	# for number in range(numberOfJewels - 1, -1, -1):
+	for number in range(numberOfJewels):
 		rectangle = Rectangle(screen, settings)
 		if number == 0:
 			rectangle.rect.y = yCoordinate
 		else:
 			# We add '+1' to create some space between jewels so as to create a boundary between jewels
-			rectangle.rect.y = (number * rectangle.height) + (2 * number) 
+			# rectangle.rect.y = (number * rectangle.height) + (2 * number) 
+			rectangle.rect.y = (number * rectangle.height)
 		rectangle.rect.x = xCoordinate
 		jewels.add(rectangle)
 
@@ -152,14 +176,16 @@ def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 ############################################
 def createHorizontallyAlignedJewels(settings, screen, jewelType, jewels):
 	numberOfJewels = fixTheNumberOfJewelsToBeFormed(settings)
-	xCoordinate = 250
+	#xCoordinate = 250
+	xCoordinate = determineTheXCoordinateOfTheNewlyFormedJewel(settings)
 	for number in range(numberOfJewels):
 		rectangle = Rectangle(screen, settings)
 		if number == 0:
 			rectangle.rect.x = xCoordinate 
 		else:
-			# We add '+1' to create some space between jewels so as to create a boundary between jewels
-			rectangle.rect.x = xCoordinate + (number * rectangle.width) + (2 * number)
+			# We add '(2 * number)' to create some space between jewels so as to create a boundary between jewels
+			#rectangle.rect.x = xCoordinate + (number * rectangle.width) + (2 * number)
+			rectangle.rect.x = xCoordinate + (number * rectangle.width)
 
 		jewels.add(rectangle)
 
@@ -176,17 +202,21 @@ def fixTheNumberOfJewelsToBeFormed(settings):
 If we write jewels.update(), then the update method is applied on each and every jewel in the jewels group.
 '''
 def forwardJewels(settings, jewels, jewelType, currentJewelsGroup):
-	collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
-	if len(collidedJewels) != 0:
-		if settings.jewelVerticalOrHorizontal == 0:
-			setVerticallyAlignedJewelsReachedBottomToTrue(jewels)
-		else:
-			for movingJewel, stationaryJewel in collidedJewels.items():
-				movingJewel.moveDown = False
-				movingJewel.reachedBottom = True
-	for jewel in jewels.sprites():
-		if jewel.moveDown:
-			jewel.update()
+	if not settings.anyJewelReachedBottom:
+		collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
+		if len(collidedJewels) != 0:
+			#print(len(collidedJewels))
+			settings.anyJewelReachedBottom = True
+			if settings.jewelVerticalOrHorizontal == 0:
+				setVerticallyAlignedJewelsReachedBottomToTrue(jewels)
+			else:
+				for movingJewel, stationaryJewel in collidedJewels.items():
+					movingJewel.moveDown = False
+					movingJewel.reachedBottom = True
+
+		for jewel in jewels.sprites():
+			if jewel.moveDown:
+				jewel.update()
 
 
 
@@ -219,7 +249,7 @@ def moveJewels(settings, screen, jewels):
 
 		for jewel in jewels.sprites():
 			if isMovingRightOrLeft and (not anyJewelAtTheEdge):
-				jewel.rect.x += (3 * settings.jewelDirection)
+				jewel.rect.x += (settings.jewelWidth * settings.jewelDirection)
 
 				
 
@@ -228,12 +258,12 @@ def anyJewelReachedEdge(settings, screen, jewels):
 	screenRect = screen.get_rect()
 	returnValue = False
 	for jewel in jewels.sprites():
-		if jewel.rect.right >= screenRect.right:
+		if jewel.rect.right > screenRect.right - settings.jewelWidth:
 			if settings.jewelDirection != -1:
 				returnValue = True
 				break
 
-		elif jewel.rect.left <= 0:
+		elif jewel.rect.left < settings.jewelWidth:
 			if settings.jewelDirection != 1:
 				returnValue = True
 				break
@@ -242,7 +272,7 @@ def anyJewelReachedEdge(settings, screen, jewels):
 
 ############################################
 def checkIfTheJewelGroupReachedBottom(jewels):
-	reachedBottom = True
+	reachedBottom = False
 	# collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
 	# if len(collidedJewels) != 0:
 	# 	for movingJewel, stationaryJewel in collidedJewels.items():
@@ -252,8 +282,8 @@ def checkIfTheJewelGroupReachedBottom(jewels):
 	# 	if jewel.settings.anyJewelReachedBottom:
 	# 		return True
 	for jewel in jewels.sprites():
-		if not jewel.reachedBottom:
-			reachedBottom = False
+		if jewel.reachedBottom:
+			reachedBottom = True
 			break
 	return reachedBottom
 
@@ -268,7 +298,22 @@ def groupTheBottomReachedJewelsIntoOne(settings, currentJewelsGroup):
 ############################################
 def checkForTheCollisionsBetweenJewels(jewels, currentJewelsGroup):
 	collidedJewelsDictionary = pygame.sprite.groupcollide(jewels, currentJewelsGroup, False, False)
+	#print(type(collidedJewelsDictionary))
 	return collidedJewelsDictionary
+
+
+############################################
+def alignTheJewelsProperly(collidedJewels, settings):
+	for movingJewel, stationaryJewel in collidedJewels.items():
+		if movingJewel.x != stationaryJewel.x:
+			if abs(movingJewel.rect.x - stationaryJewel.rect.x) <= settings.jewelWidth / 2:
+				movingJewel.rect.x = stationaryJewel.rect.x
+			else:
+				if movingJewel.rect.x > stationaryJewel.rect.x:
+					movingJewel.rect.x = stationaryJewel.rect.x + settings.jewelWidth
+				else:
+					movingJewel.rect.x = stationaryJewel.rect.x - settings.jewelWidth
+
 	
 			
 
@@ -304,8 +349,12 @@ def updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup):
 
 
 ############################################
-def defideTheScreenIntoSegments(settings, screen):
-	print('')
+def determineTheNumberOfSegmentsThatScreenCanBeDividedInto(settings):
+	numberOfSegments = int((settings.screenWidth)  / settings.jewelWidth)
+	return numberOfSegments	
+
+
+			
 
 
 
