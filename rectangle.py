@@ -45,14 +45,16 @@ class Rectangle(Sprite):
 
 		screenRect = self.screen.get_rect()
 
-		if (not self.settings.anyJewelReachedBottom) and self.rect.bottom < screenRect.bottom - self.settings.jewelHeight:
-			self.rect.y += self.settings.jewelHeight 
-			newrect = Rectangle(self.screen, self.settings)
-			newrect.rect.y = self.rect.y
-			newrect.blitme()
+		#if not self.settings.anyJewelReachedBottom and self.rect.bottom < screenRect.bottom - self.settings.jewelHeight:
+		if self.rect.bottom <= screenRect.bottom - self.settings.jewelHeight:
+			self.rect.y += 3
+			#newrect = Rectangle(self.screen, self.settings)
+			#newrect.rect.y = self.rect.y
+			self.blitme()
 		else:
 			self.settings.anyJewelReachedBottom = True
 			self.reachedBottom = True
+			self.moveDown = False
 
 
 

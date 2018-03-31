@@ -170,7 +170,7 @@ def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 			# rectangle.rect.y = (number * rectangle.height) + (2 * number) 
 			rectangle.rect.y = (number * rectangle.height)
 		rectangle.rect.x = xCoordinate
-		jewels.add(rectangle)
+		settings.jewels.add(rectangle)
 
 
 ############################################
@@ -187,7 +187,7 @@ def createHorizontallyAlignedJewels(settings, screen, jewelType, jewels):
 			#rectangle.rect.x = xCoordinate + (number * rectangle.width) + (2 * number)
 			rectangle.rect.x = xCoordinate + (number * rectangle.width)
 
-		jewels.add(rectangle)
+		settings.jewels.add(rectangle)
 
 
 ############################################
@@ -202,21 +202,39 @@ def fixTheNumberOfJewelsToBeFormed(settings):
 If we write jewels.update(), then the update method is applied on each and every jewel in the jewels group.
 '''
 def forwardJewels(settings, jewels, jewelType, currentJewelsGroup):
-	if not settings.anyJewelReachedBottom:
-		collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
-		if len(collidedJewels) != 0:
-			#print(len(collidedJewels))
-			settings.anyJewelReachedBottom = True
-			if settings.jewelVerticalOrHorizontal == 0:
-				setVerticallyAlignedJewelsReachedBottomToTrue(jewels)
-			else:
-				for movingJewel, stationaryJewel in collidedJewels.items():
-					movingJewel.moveDown = False
-					movingJewel.reachedBottom = True
+	# collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
+	# if len(collidedJewels) != 0: # If a collision happened, then both jewels would be copied as a key pair into collided Jewels dictionary
+		
+	# 	if settings.jewelVerticalOrHorizontal == 0: # if they are aligned vertically
+	# 		settings.anyJewelReachedBottom = True
+	# 		setVerticallyAlignedJewelsReachedBottomToTrue(settings.jewels)
+	# 	else:
+	# 		for movingJewel, stationaryJewel in collidedJewels.items():
+	# 			movingJewel.moveDown = False
+	# 			movingJewel.reachedBottom = True
+	changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup)
 
-		for jewel in jewels.sprites():
-			if jewel.moveDown:
+	for jewel in settings.jewels.sprites():
+		if jewel.moveDown and not jewel.reachedBottom:
+			if settings.anyJewelReachedBottom and settings.jewelVerticalOrHorizontal == 0:
+				break
+			else:
 				jewel.update()
+
+
+def changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup):
+	collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
+	if len(collidedJewels) != 0: # If a collision happened, then both jewels would be copied as a key pair into collided Jewels dictionary
+		
+		if settings.jewelVerticalOrHorizontal == 0: # if they are aligned vertically
+			settings.anyJewelReachedBottom = True
+			setVerticallyAlignedJewelsReachedBottomToTrue(settings.jewels)
+		else:
+			for movingJewel, stationaryJewel in collidedJewels.items():
+				movingJewel.moveDown = False
+				movingJewel.reachedBottom = True
+
+
 
 
 
@@ -241,7 +259,7 @@ def setVerticallyAlignedJewelsReachedBottomToTrue(jewels):
 
 ############################################
 def moveJewels(settings, screen, jewels):
-	didJewelGroupReachedBottom = checkIfTheJewelGroupReachedBottom(jewels)
+	didJewelGroupReachedBottom = checkIfTheJewelGroupReachedBottom(settings)
 	if not didJewelGroupReachedBottom:
 		screenRect = screen.get_rect()
 		anyJewelAtTheEdge = anyJewelReachedEdge(settings, screen, jewels)
@@ -271,7 +289,7 @@ def anyJewelReachedEdge(settings, screen, jewels):
 	return returnValue
 
 ############################################
-def checkIfTheJewelGroupReachedBottom(jewels):
+def checkIfTheJewelGroupReachedBottom(settings):
 	reachedBottom = False
 	# collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
 	# if len(collidedJewels) != 0:
@@ -281,11 +299,27 @@ def checkIfTheJewelGroupReachedBottom(jewels):
 	# for jewel in jewels.sprites():
 	# 	if jewel.settings.anyJewelReachedBottom:
 	# 		return True
-	for jewel in jewels.sprites():
-		if jewel.reachedBottom:
+	
+	numberOfJewelsReachedBottomIfHorizontallyAligned = 0
+
+	if settings.jewelVerticalOrHorizontal == 0:
+		for jewel in settings.jewels.sprites():
+			if jewel.reachedBottom:
+				reachedBottom = True
+				break
+
+		return reachedBottom
+
+	else:
+		for jewel in settings.jewels.sprites():
+			if jewel.reachedBottom:
+				numberOfJewelsReachedBottomIfHorizontallyAligned += 1
+
+		if len(settings.jewels) == numberOfJewelsReachedBottomIfHorizontallyAligned:
 			reachedBottom = True
-			break
-	return reachedBottom
+		
+		return reachedBottom
+
 
 
 ############################################
