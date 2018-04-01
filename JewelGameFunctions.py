@@ -115,8 +115,6 @@ def determineTheXCoordinateOfTheNewlyFormedJewel(settings):
 	AcceptableXCoordinates = determineTheProbableXCoordinatesForTheNewlyFormedJewels(settings)
 	numberOfSegments = determineTheNumberOfSegmentsThatScreenCanBeDividedInto(settings)
 	indexOfTheXCoordinate = randint(0, numberOfSegments - 1)
-	#print('The present index is ' + str(indexOfTheXCoordinate) + ' and the nos ' + str(numberOfSegments))
-	#print('len of Acce ' + str(len(AcceptableXCoordinates)) + ' indexOfTheXCoordinate ' + str(indexOfTheXCoordinate) )
 	xCoordinate = AcceptableXCoordinates[indexOfTheXCoordinate]
 
 	return xCoordinate
@@ -207,7 +205,6 @@ def createHorizontallyAlignedJewels(settings, screen, jewelType, jewels):
 ############################################
 def fixTheNumberOfJewelsToBeFormed(settings):
 	numberOfJewels = randint(1, settings.jewelsLimit)
-	print('numberOfJewels ' + str(numberOfJewels))
 	return numberOfJewels
 
 
@@ -418,7 +415,34 @@ def alignTheJewelsProperly(collidedJewels, settings):
 				else:
 					movingJewel.rect.x = stationaryJewel.rect.x - settings.jewelWidth
 
-	
+
+def checkIfThereAreMoreThanThreeSameJewelsAreAlignedImmediatelyToEachOther(collidedJewels, settings, currentJewelsGroup):
+	for movingJewel, stationaryJewel in collidedJewels.items():
+		if movingJewel.jewelColor == stationaryJewel.jewelColor:
+
+
+
+def checkForSameJewelsHorizontally(movingJewel, stationaryJewel, settings):
+	print('')
+	listOfCoordinates = []
+	colorOfTheJewel = movingJewel.jewelColorInRGB
+	startXCoordinateUp = movingJewel.rect.x
+	startYCoordinateUp = movingJewel.rect.y
+
+	startXCoordinateDown = stationaryJewel.rect.x
+	startYCoordinateUpDown = stationaryJewel.rect.y
+
+	colorAtTheNewRect = (0, 0, 0)
+
+	while colorOfTheJewel == colorAtTheNewRect:
+		listOfCoordinates.append((startXCoordinateUp + settings.jewelHeight))
+
+
+
+
+def checkForSamejewelsVertically():
+	print('')
+
 			
 
 ######################################################## SCREEN UPDATES ####################################################
