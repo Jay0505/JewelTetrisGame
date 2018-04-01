@@ -25,18 +25,20 @@ def resetAllTheSettings(settings):
 	settings.jewelMovingLeft = False
 	settings.anyJewelReachedEdge = False
 	settings.anyJewelReachedBottom = False
+	settings.numberOfJewels = 0
+	del settings.listOfJewels[:]
 
 
 
 ######################################## KEY EVENTS ###########################################
 
-def checkEvents(settings, screen, jewels):
+def checkEvents(settings, screen, jewels, currentJewelsGroup):
 	for event in pygame.event.get():
 		if event.type == pygame.QUIT:
 			sys.exit()
 
 		elif event.type == pygame.KEYDOWN:
-			keyDownEvents(settings, screen, event,jewels)
+			keyDownEvents(settings, screen, event, jewels, currentJewelsGroup)
 
 		elif event.type == pygame.KEYUP:
 			keyUpEvents(settings, screen, event, jewels)
@@ -55,17 +57,28 @@ If it is positive and the key pressed is left arrow, we change the direction val
 if the left arrow key is pressed.
 
 '''
-def keyDownEvents(settings, screen, event, jewels):
+def keyDownEvents(settings, screen, event, jewels, currentJewelsGroup):
 	if event.key == pygame.K_RIGHT:
 		settings.jewelMovingRight = True
 		if settings.jewelDirection == -1:
 			settings.jewelDirection = 1 
 
 	elif event.key == pygame.K_LEFT:
+		settings.jewelMovingLeft = True
 		if settings.jewelDirection == 1:
 			settings.jewelDirection = -1
 
-		settings.jewelMovingLeft = True
+	elif event.key == pygame.K_UP:
+		up = 1
+		changeTheJewelPositionsAfterTheJewelsFormed(settings, screen, currentJewelsGroup, up)
+
+
+	elif event.key == pygame.K_DOWN:
+		down = 0
+		changeTheJewelPositionsAfterTheJewelsFormed(settings, screen, currentJewelsGroup, down)
+
+
+	
 
 
 
@@ -131,7 +144,7 @@ def funcResponsibleForMovementOfJewelsAndScreenUpdate(settings, currentJewelsGro
 	jewelType = settings.jewelType
 	jewelVerticalOrHorizontal = settings.jewelVerticalOrHorizontal
 	jewels = settings.jewels
-	checkEvents(settings, screen, jewels) # Checks for any key press or release events
+	checkEvents(settings, screen, jewels, currentJewelsGroup) # Checks for any key press or release events
 	forwardJewels(settings, jewels, jewelType, currentJewelsGroup) # move the jewels in the downward direction
 	moveJewels(settings, screen, jewels) # move the jewels either right or left based upon the key pressed
 	updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup) # updates the screen with the latest positions of the jewels
@@ -171,12 +184,13 @@ def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 			rectangle.rect.y = (number * rectangle.height)
 		rectangle.rect.x = xCoordinate
 		settings.jewels.add(rectangle)
+		settings.listOfJewels.append(rectangle)
 
 
 ############################################
 def createHorizontallyAlignedJewels(settings, screen, jewelType, jewels):
 	numberOfJewels = fixTheNumberOfJewelsToBeFormed(settings)
-	#xCoordinate = 250
+	settings.numberOfJewels = numberOfJewels
 	xCoordinate = determineTheXCoordinateOfTheNewlyFormedJewel(settings)
 	for number in range(numberOfJewels):
 		rectangle = Rectangle(screen, settings)
@@ -188,6 +202,9 @@ def createHorizontallyAlignedJewels(settings, screen, jewelType, jewels):
 			rectangle.rect.x = xCoordinate + (number * rectangle.width)
 
 		settings.jewels.add(rectangle)
+		settings.listOfJewels.append(rectangle)
+
+	print('length of list' + str(len(settings.listOfJewels)) + ' numberOfJewels ' + str(numberOfJewels))
 
 
 ############################################
@@ -202,16 +219,6 @@ def fixTheNumberOfJewelsToBeFormed(settings):
 If we write jewels.update(), then the update method is applied on each and every jewel in the jewels group.
 '''
 def forwardJewels(settings, jewels, jewelType, currentJewelsGroup):
-	# collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
-	# if len(collidedJewels) != 0: # If a collision happened, then both jewels would be copied as a key pair into collided Jewels dictionary
-		
-	# 	if settings.jewelVerticalOrHorizontal == 0: # if they are aligned vertically
-	# 		settings.anyJewelReachedBottom = True
-	# 		setVerticallyAlignedJewelsReachedBottomToTrue(settings.jewels)
-	# 	else:
-	# 		for movingJewel, stationaryJewel in collidedJewels.items():
-	# 			movingJewel.moveDown = False
-	# 			movingJewel.reachedBottom = True
 	changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup)
 
 	for jewel in settings.jewels.sprites():
@@ -222,6 +229,8 @@ def forwardJewels(settings, jewels, jewelType, currentJewelsGroup):
 				jewel.update()
 
 
+
+############################################
 def changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup):
 	collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
 	if len(collidedJewels) != 0: # If a collision happened, then both jewels would be copied as a key pair into collided Jewels dictionary
@@ -236,6 +245,78 @@ def changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup):
 
 
 
+
+############################################
+'''
+-- This function is used to change the positions of the jewels when UP arrow key is pressed.
+-- 
+'''
+def changeTheJewelPositionsAfterTheJewelsFormed(settings, screen, currentJewelsGroup, upOrDown):
+
+	if upOrDown == 1:
+		changeTheJewelPositionsWhenUpArrowKeyPressed(settings, screen, currentJewelsGroup)
+
+	if upOrDown == 0:
+		changeTheJewelPositionsWhenDownArrowKeyPressed(settings, screen, currentJewelsGroup)
+	
+
+############################################
+'''
+-- If the up arrow key pressed, then change the positions of the jewels in the clockwise direction. In other words, jewel at 
+index 1 should be move to index 0, index 2 to index 1, index 3 to index 2 ......index 0 to index n - 1
+
+-- 'n' being number of jewels in the list
+'''
+
+def changeTheJewelPositionsWhenUpArrowKeyPressed(settings, screen, currentJewelsGroup):
+	numberOfJewels = len(settings.listOfJewels)
+	jewels = settings.listOfJewels
+
+	indexOneRectangleshape = jewels[0].shape
+	colorOfTheJewelInRGB = jewels[0].jewelColor
+	screenOfTheIndexOneJewel = jewels[0].screen
+	for index in range(1, numberOfJewels):
+		screen = jewels[index].screen
+		shape = jewels[index].shape
+		colorValueInRGB = jewels[index].jewelColor
+		drawTheShapeAtTheNewCoordinates(screen, jewels[index - 1], shape, colorValueInRGB)
+
+	drawTheShapeAtTheNewCoordinates(screenOfTheIndexOneJewel, jewels[numberOfJewels - 1], indexOneRectangleshape, colorOfTheJewelInRGB)
+	updateScreen(settings, screen, 1, settings.jewels, currentJewelsGroup)
+
+
+
+############################################
+'''
+-- If the up arrow key pressed, then change the positions of the jewels in the clockwise direction. In other words, jewel at 
+index n should be move to index n - 1, index n - 1 to index n - 2, index n - 2 to index n - 3 ......index n  to index 0
+
+-- 'n' being number of jewels in the list
+'''
+
+def changeTheJewelPositionsWhenDownArrowKeyPressed(settings, screen, currentJewelsGroup):
+	numberOfJewels = len(settings.listOfJewels)
+	jewels = settings.listOfJewels
+
+	lastRectangleshape = jewels[numberOfJewels - 1].shape
+	colorOfThelastJewel = jewels[numberOfJewels - 1].jewelColor
+	screenOfTheLastJewel = jewels[numberOfJewels - 1].screen
+	for index, jewel in reversed(list(enumerate(jewels))):
+		if index != numberOfJewels - 1:
+			screen = jewels[index].screen
+			shape = jewels[index].shape
+			colorValueInRGB = jewels[index].jewelColor
+			drawTheShapeAtTheNewCoordinates(screen, jewels[index + 1], shape, colorValueInRGB)
+
+	drawTheShapeAtTheNewCoordinates(screenOfTheLastJewel, jewels[0], lastRectangleshape, colorOfThelastJewel)
+	updateScreen(settings, screen, 1, settings.jewels, currentJewelsGroup)
+
+
+def drawTheShapeAtTheNewCoordinates(screen, jewel, shapeOfTheJewel, colorOfTheJewelInRGB):
+	if shapeOfTheJewel == "rectangle":
+		jewel.jewelColor = colorOfTheJewelInRGB
+		jewel.shape = shapeOfTheJewel
+	
 
 
 ############################################
@@ -291,15 +372,6 @@ def anyJewelReachedEdge(settings, screen, jewels):
 ############################################
 def checkIfTheJewelGroupReachedBottom(settings):
 	reachedBottom = False
-	# collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
-	# if len(collidedJewels) != 0:
-	# 	for movingJewel, stationaryJewel in collidedJewels.items():
-	# 		movingJewel.reachedBottom = True
-
-	# for jewel in jewels.sprites():
-	# 	if jewel.settings.anyJewelReachedBottom:
-	# 		return True
-	
 	numberOfJewelsReachedBottomIfHorizontallyAligned = 0
 
 	if settings.jewelVerticalOrHorizontal == 0:

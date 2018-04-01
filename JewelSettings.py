@@ -23,9 +23,11 @@ class Settings(object):
 		self.jewelMovingLeft = False
 		self.anyJewelReachedEdge = False
 		self.anyJewelReachedBottom = False
+		self.numberOfJewelsInEachIteration = 0
 
 		#self.bottomReachedJewelsAsaGroup = Group()
 		self.probableXCoordinates = []
+		self.listOfJewels = []
 
 
 		

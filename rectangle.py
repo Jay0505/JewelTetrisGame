@@ -25,19 +25,26 @@ class Rectangle(Sprite):
 		self.moveDown = True
 		self.reachedBottom = False
 		self.jewelColor = randint(0, self.settings.colorOfJewels - 1)
+
+		self.shape = "rectangle"
+	
 		
 
 	############################################
 	def blitme(self):
-		#self.screen.blit(self.image, self.rect)
+		
 		if self.jewelColor == 0:
 			pygame.draw.rect(self.screen, (255, 0, 0), self.rect)
+			
 		elif self.jewelColor == 1:
 			pygame.draw.rect(self.screen, (0, 0, 0), self.rect)
+			
 		elif self.jewelColor == 2:
 			pygame.draw.rect(self.screen, (2, 0, 182), self.rect)
+			
 		elif self.jewelColor == 3:
 			pygame.draw.rect(self.screen, (249, 158, 2), self.rect)
+			
 
 
 	############################################
@@ -55,6 +62,10 @@ class Rectangle(Sprite):
 			self.settings.anyJewelReachedBottom = True
 			self.reachedBottom = True
 			self.moveDown = False
+
+
+	def draw(self, shapeOfTheJewel, colorOfTheJewel):
+		pygame.draw.rect(self.screen, colorOfTheJewel, self.rect)
 
 
 
