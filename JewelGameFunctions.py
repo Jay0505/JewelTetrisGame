@@ -2,6 +2,7 @@ import sys
 import pygame
 
 from pygame.sprite import Group
+from pygame.sprite import Sprite
 from random import randint
 from rectangle import Rectangle
 
@@ -416,32 +417,104 @@ def alignTheJewelsProperly(collidedJewels, settings):
 					movingJewel.rect.x = stationaryJewel.rect.x - settings.jewelWidth
 
 
-def checkIfThereAreMoreThanThreeSameJewelsAreAlignedImmediatelyToEachOther(collidedJewels, settings, currentJewelsGroup):
+def checkIfThereAreMoreThanThreeSameJewelsAreAlignedImmediatelyToEachOther(collidedJewels, settings, currentJewelsGroup, screen):
 	for movingJewel, stationaryJewel in collidedJewels.items():
 		if movingJewel.jewelColor == stationaryJewel.jewelColor:
+			matchedJewelsUp = checkForSameJewelsHorizontallyUpwards(movingJewel, stationaryJewel, settings, screen)
+			matchedJewelsDown = checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settings, screen)
+			
+			if len(matchedJewelsUp) != 0:
+				# for xyTuple in matchedJewelsUp:
+					# jewelToBeRemoved = getTheJewelAtAParticularCoordinates(xyTuple, settings.jewels)
+					# settings.jewels.remove(jewelToBeRemoved)
+					removeAJewelFromTheGroupSpecifiedInTheList(matchedJewelsUp, settings.jewels)
+
+			if len(matchedJewelsDown) != 0:
+				# for xyTuple in matchedJewelsDown:
+				# 	jewelToBeRemoved = getTheJewelAtAParticularCoordinates(xyTuple, currentJewelsGroup)
+				# 	currentJewelsGroup.remove(jewelToBeRemoved)
+				removeAJewelFromTheGroupSpecifiedInTheList(matchedJewelsDown, currentJewelsGroup)
 
 
+def removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, jewels):
+	for xyTuple in listOfCoordinates:
+		jewelToBeRemoved = getTheJewelAtAParticularCoordinates(xyTuple, jewels)
+		settings.jewels.remove(jewelToBeRemoved)
 
-def checkForSameJewelsHorizontally(movingJewel, stationaryJewel, settings):
-	print('')
-	listOfCoordinates = []
+
+def getTheJewelAtAParticularCoordinates(coordinateTuple, jewels):
+	for jewel in jewels.sprites():
+		if jewel.rect.x == coordinateTuple[0] and jewel.rect.y == coordinateTuple[1]:
+			return jewel
+
+
+def checkForSameJewelsHorizontallyUpwards(movingJewel, stationaryJewel, settings, screen):
+	listOfCoordinatesUp = []
 	colorOfTheJewel = movingJewel.jewelColorInRGB
 	startXCoordinateUp = movingJewel.rect.x
 	startYCoordinateUp = movingJewel.rect.y
 
+	# startXCoordinateDown = stationaryJewel.rect.x
+	# startYCoordinateUpDown = stationaryJewel.rect.y
+
+	colorAtTheNewRect = (0, 0, 0)
+
+	while startYCoordinateUp >= 0:
+		startYCoordinateUp -= settings.jewelHeight
+		colorAtTheNewRect = screen.get_at((startXCoordinateUp, startYCoordinateUp))
+		trimmedColorAtTheNewRect = trimTheRGBColorValue(colorAtTheNewRect)
+		if colorOfTheJewel == trimmedColorAtTheNewRect:
+			listOfCoordinates.append((startXCoordinateUp, startYCoordinateUp))
+
+		else:
+			break
+
+	# while startYCoordinateDown <= settings.screenHeight:
+	# 	startXCoordinateDown += settings.jewelHeight
+	# 	colorAtTheNewRect = screen.get_at((startXCoordinateDown, startYCoordinateDown))
+	# 	trimmedColorAtTheNewRect = trimTheRGBColorValue(colorAtTheNewRect)
+	# 	if colorOfTheJewel == trimmedColorAtTheNewRect:
+	# 		listOfCoordinates.append((startXCoordinateDown, startYCoordinateDown))
+
+	# 	else:
+	# 		break
+
+
+	return listOfCoordinatesUp
+
+
+def checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settings, screen):
+	listOfCoordinatesDown = []
+	colorOfTheJewel = movingJewel.jewelColorInRGB
+	
 	startXCoordinateDown = stationaryJewel.rect.x
 	startYCoordinateUpDown = stationaryJewel.rect.y
 
 	colorAtTheNewRect = (0, 0, 0)
 
-	while colorOfTheJewel == colorAtTheNewRect:
-		listOfCoordinates.append((startXCoordinateUp + settings.jewelHeight))
+	while startYCoordinateDown <= settings.screenHeight:
+		startXCoordinateDown += settings.jewelHeight
+		colorAtTheNewRect = screen.get_at((startXCoordinateDown, startYCoordinateDown))
+		trimmedColorAtTheNewRect = trimTheRGBColorValue(colorAtTheNewRect)
+		if colorOfTheJewel == trimmedColorAtTheNewRect:
+			listOfCoordinates.append((startXCoordinateDown, startYCoordinateDown))
+
+		else:
+			break
+
+
+	return listOfCoordinatesDown
 
 
 
 
 def checkForSamejewelsVertically():
 	print('')
+
+
+def trimTheRGBColorValue(RGBColorTuple):
+	RGBColorTuple = (value for value in RGBColorTuple if x < 3)
+	return RGBColorTuple
 
 			
 
