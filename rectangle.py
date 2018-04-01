@@ -25,6 +25,7 @@ class Rectangle(Sprite):
 		self.moveDown = True
 		self.reachedBottom = False
 		self.jewelColor = randint(0, self.settings.colorOfJewels - 1)
+		self.imageNumber = randint(0, self.settings.totalNumberOfImages - 1)
 
 		self.shape = "rectangle"
 	
@@ -33,18 +34,56 @@ class Rectangle(Sprite):
 	############################################
 	def blitme(self):
 		
-		if self.jewelColor == 0:
-			pygame.draw.rect(self.screen, (255, 0, 0), self.rect)
+		if self.jewelColor == 0: # splash-blue
+			pygame.draw.rect(self.screen, (9, 132, 227), self.rect)
 			
-		elif self.jewelColor == 1:
-			pygame.draw.rect(self.screen, (0, 0, 0), self.rect)
+		elif self.jewelColor == 1: # mintleaf
+			pygame.draw.rect(self.screen, (0, 184, 148), self.rect)
 			
-		elif self.jewelColor == 2:
-			pygame.draw.rect(self.screen, (2, 0, 182), self.rect)
+		elif self.jewelColor == 2: # faded poster
+			pygame.draw.rect(self.screen, (129, 236, 236), self.rect)
 			
-		elif self.jewelColor == 3:
-			pygame.draw.rect(self.screen, (249, 158, 2), self.rect)
-			
+		elif self.jewelColor == 3: # orange-ville
+			pygame.draw.rect(self.screen, (225, 112, 85), self.rect)
+
+		elif self.jewelColor == 4: # peri-vinkle
+			pygame.draw.rect(self.screen, (156, 136, 255), self.rect)
+
+		elif self.jewelColor == 5: # riseNshine
+			pygame.draw.rect(self.screen, (251, 197, 49), self.rect)
+
+		elif self.jewelColor == 6: # white
+			pygame.draw.rect(self.screen, (245, 246, 250), self.rect)
+
+		# if self.imageNumber == 0:
+		# 	rectangleImage = pygame.image.load('images/blueCircles.bmp')
+		# 	self.image = pygame.transform.scale(rectangleImage, (self.settings.jewelWidth, self.settings.jewelHeight))
+
+		# elif self.imageNumber == 1:
+		# 	rectangleImage = pygame.image.load('images/coloredCircles.bmp')
+		# 	self.image = pygame.transform.scale(rectangleImage, (self.settings.jewelWidth, self.settings.jewelHeight))
+
+		# elif self.imageNumber == 2:
+		# 	rectangleImage = pygame.image.load('images/coloredLove.bmp')
+		# 	self.image = pygame.transform.scale(rectangleImage, (self.settings.jewelWidth, self.settings.jewelHeight))
+
+		# elif self.imageNumber == 3:
+		# 	rectangleImage = pygame.image.load('images/paperBoats.bmp')
+		# 	self.image = pygame.transform.scale(rectangleImage, (self.settings.jewelWidth, self.settings.jewelHeight))
+
+		# elif self.imageNumber == 4:
+		# 	rectangleImage = pygame.image.load('images/pathang.bmp')
+		# 	self.image = pygame.transform.scale(rectangleImage, (self.settings.jewelWidth, self.settings.jewelHeight))
+
+		# elif self.imageNumber == 5:
+		# 	rectangleImage = pygame.image.load('images/plate.bmp')
+		# 	self.image = pygame.transform.scale(rectangleImage, (self.settings.jewelWidth, self.settings.jewelHeight))
+
+		# elif self.imageNumber == 6:
+		# 	rectangleImage = pygame.image.load('images/whiteBulb.bmp')
+		# 	self.image = pygame.transform.scale(rectangleImage, (self.settings.jewelWidth, self.settings.jewelHeight))
+
+		# self.screen.blit(self.image, self.rect)
 
 
 	############################################
@@ -54,7 +93,7 @@ class Rectangle(Sprite):
 
 		#if not self.settings.anyJewelReachedBottom and self.rect.bottom < screenRect.bottom - self.settings.jewelHeight:
 		if self.rect.bottom <= screenRect.bottom - self.settings.jewelHeight:
-			self.rect.y += 3
+			self.rect.y += 8
 			#newrect = Rectangle(self.screen, self.settings)
 			#newrect.rect.y = self.rect.y
 			self.blitme()

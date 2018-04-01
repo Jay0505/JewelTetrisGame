@@ -171,9 +171,8 @@ def createJewelGroup(settings, screen):
 def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 	numberOfJewels = fixTheNumberOfJewelsToBeFormed(settings)
 	yCoordinate = 0
-	#xCoordinate = 250
 	xCoordinate = determineTheXCoordinateOfTheNewlyFormedJewel(settings)
-	# for number in range(numberOfJewels - 1, -1, -1):
+	
 	for number in range(numberOfJewels):
 		rectangle = Rectangle(screen, settings)
 		if number == 0:
@@ -204,12 +203,11 @@ def createHorizontallyAlignedJewels(settings, screen, jewelType, jewels):
 		settings.jewels.add(rectangle)
 		settings.listOfJewels.append(rectangle)
 
-	print('length of list' + str(len(settings.listOfJewels)) + ' numberOfJewels ' + str(numberOfJewels))
-
 
 ############################################
 def fixTheNumberOfJewelsToBeFormed(settings):
 	numberOfJewels = randint(1, settings.jewelsLimit)
+	print('numberOfJewels ' + str(numberOfJewels))
 	return numberOfJewels
 
 
