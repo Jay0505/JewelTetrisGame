@@ -16,7 +16,7 @@ class Settings(object):
 		self.jewelVerticalOrHorizontal = 1 # vertical = 0; Horizontal = 1
 		self.colorOfJewels = 4
 		self.jewelType = 1
-		self.jewelSpeedFactor = self.jewelWidth
+		self.jewelSpeedFactor = 20
 		self.jewelsLimit = 4
 		self.jewelDirection = 1   # 1 - moving right i.e. value of x-coordinate should increase / -1 corresponds to moving left, therefore x should decrease
 		self.jewelMovingRight = False

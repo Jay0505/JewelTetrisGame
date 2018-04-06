@@ -54,12 +54,22 @@ class Rectangle(Sprite):
 
 		screenRect = self.screen.get_rect()
 
-		
+		'''
+		-- Since all the jewels are in a group, after every downward (forward) movement of the jewels, we have to check if the next forward step
+		would make the jewel go out of the screen. For that reason, after incrementing the jewel's bottom and blitting it on the screen, we check 
+		if the next forward step would make the jewel go out of the screen. If yes, we make the reached bottom to True and moveDown to False. If not, 
+		we will make the jewel move.
+		'''
 		if self.rect.bottom <= screenRect.bottom and not self.settings.anyJewelReachedBottom:
-			self.rect.bottom += 10
+			self.rect.bottom += self.settings.jewelSpeedFactor
 			self.blitme()
 
-			if self.rect.bottom +  10 > screenRect.bottom:
+			if self.rect.bottom +  self.settings.jewelSpeedFactor > screenRect.bottom:
+				'''
+				-- In case of jewels vertically aligned and If one jewel's next step would make it to go out of the screen, we would make the 
+				anyJewelReachedBottom to true because, if one jewel reached bottom (the bottom one) then all the jewels above it should not move
+				any more further.
+				'''
 				if self.settings.jewelVerticalOrHorizontal == 0:
 					self.settings.anyJewelReachedBottom = True
 					self.reachedBottom = True

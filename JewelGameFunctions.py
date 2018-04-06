@@ -65,8 +65,6 @@ def keyDownEvents(settings, screen, event, jewels, currentJewelsGroup):
 			settings.jewelDirection = 1 
 
 		determineRightOrLeftForEachJewel(settings)
-		collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
-		whenCollidedSetTheAppropriateRightOrLeftValuesForJewels(settings, collidedJewels)
 
 	elif event.key == pygame.K_LEFT:
 		settings.jewelMovingLeft = True
@@ -74,8 +72,6 @@ def keyDownEvents(settings, screen, event, jewels, currentJewelsGroup):
 			settings.jewelDirection = -1
 
 		determineRightOrLeftForEachJewel(settings)
-		collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
-		whenCollidedSetTheAppropriateRightOrLeftValuesForJewels(settings, collidedJewels)
 
 	elif event.key == pygame.K_UP:
 		up = 1
@@ -152,8 +148,7 @@ def funcResponsibleForMovementOfJewelsAndScreenUpdate(settings, currentJewelsGro
 	jewelVerticalOrHorizontal = settings.jewelVerticalOrHorizontal
 	jewels = settings.jewels
 	checkEvents(settings, screen, jewels, currentJewelsGroup) # Checks for any key press or release events
-	changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup)
-	forwardJewels(settings, screen, jewels, jewelType, currentJewelsGroup) # move the jewels in the downward direction
+	forwardJewels(settings, jewels, jewelType, currentJewelsGroup) # move the jewels in the downward direction
 	moveJewels(settings, screen, jewels, currentJewelsGroup) # move the jewels either right or left based upon the key pressed
 	updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup) # updates the screen with the latest positions of the jewels
 
@@ -193,15 +188,6 @@ def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 
 		rectangle.myNumber = number
 		rectangle.rect.x = xCoordinate
-		print('-----------------------------------------------------------')
-		print('self settings ' + str(rectangle.settings.anyJewelReachedBottom))
-		print('self direction ' + str(rectangle.settings.jewelVerticalOrHorizontal))
-		print('self Number ' + str(rectangle.myNumber))
-		print('self Y ' + str(rectangle.rect.y))
-		print('self X ' + str(rectangle.rect.x))
-		print('self bottom ' + str(rectangle.rect.bottom))
-
-
 		settings.jewels.add(rectangle)
 		settings.listOfJewels.append(rectangle)
 
@@ -238,59 +224,94 @@ def fixTheNumberOfJewelsToBeFormed(settings):
 -- This function is responsible for the downward movement of the jewel. Update is the method in the respective jewel class.
 If we write jewels.update(), then the update method is applied on each and every jewel in the jewels group.
 '''
-def forwardJewels(settings, screen, jewels, jewelType, currentJewelsGroup):
-	updateJewel(settings, screen)
+def forwardJewels(settings, jewels, jewelType, currentJewelsGroup):
+	#changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup)
+	updateJewel(settings, currentJewelsGroup)
 
 ############################################
-def updateJewel(settings, screen):
-	screenRect = screen.get_rect()
+def updateJewel(settings, currentJewelsGroup):
+	
 	for jewel in settings.jewels.sprites():
 		if jewel.moveDown and not jewel.reachedBottom:
 			jewel.update()
-	
+			checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup)
 
-############################################
-def changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup):
-	collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
-	if len(collidedJewels) != 0: # If a collision happened, then both jewels would be copied as a key pair into collided Jewels dictionary
+'''
+-- A collision between two sprites is detected when the rect.x and rect.y values of both the sprites are equal. In this case, to get effect of 
+jewel stopping when collided with another jewel, we make the top of the stationary jewel equal to bottom of the moving jewel and we blite the 
+moving jewel. It will create an illusion as if the jewel stopped when it collided with other jewel.
+'''			
+
+def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup):
+	collidedJewelsList = pygame.sprite.spritecollide(jewel, currentJewelsGroup, False)
+	if len(collidedJewelsList) != 0:
 		
-		if settings.jewelVerticalOrHorizontal == 0: # if they are aligned vertically
-			settings.anyJewelReachedBottom = True
-			setVerticallyAlignedJewelsReachedBottomToTrue(settings.jewels)
+		if settings.jewelVerticalOrHorizontal == 0:
+			bottom = collidedJewelsList[0].rect.top
+			changeTheSettingsOfTheJewelsCollidedWhenVerticallyAligned(settings, bottom)
 		else:
-			for movingJewel, stationaryJewel in collidedJewels.items():
-				movingJewel.moveDown = False
-				movingJewel.reachedBottom = True
-				moveJewels.movingRight = False
-				movingJewel.movingLeft = False
+			jewel.moveDown = False
+			jewel.reachedBottom = True
+			jewel.movingRight = False
+			jewel.movingLeft = False
+			jewel.rect.bottom = collidedJewelsList[0].rect.top
+			jewel.blitme()
 
 
-############################################
-def checkForTheCollisionsBetweenJewels(jewels, currentJewelsGroup):
-	collidedJewelsDictionary = pygame.sprite.groupcollide(jewels, currentJewelsGroup, False, False)
-	#print(type(collidedJewelsDictionary))
-	return collidedJewelsDictionary
-
-
-############################################
-'''
--- If the jewels are vertically aligned and there are already some jewels at the bottom and had been added to the currenJewelsGroup.
-
--- Now, if one of the moving jewels collided with the stationary jewels at the bottom, then the movement of the jewels should be stopped.
-
--- Not only the movement of the collided jewel, since they all are vertically aligned, if the very bottom is stopped then the movement of
-all the jewels above it should also be stopped.
-
--- Therefore, if the jewels are vertially aligned and if the bottom jewel reached bottom or collied with another stationary jewel, then
-moveDown and reachedBottom attributes of all the jewels in that group are set to False and True respectively.
-'''
-
-def setVerticallyAlignedJewelsReachedBottomToTrue(jewels):
-	for jewel in jewels.sprites():
+def changeTheSettingsOfTheJewelsCollidedWhenVerticallyAligned(settings, bottom):
+	settings.anyJewelReachedBottom = True
+	for jewel in settings.jewels.sprites():
 		jewel.moveDown = False
 		jewel.reachedBottom = True
 		jewel.movingRight = False
 		jewel.movingLeft = False
+		jewel.rect.bottom -= 20
+		jewel.blitme()
+
+			
+
+# ############################################
+# def changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup):
+# 	collidedJewels = checkForTheCollisionsBetweenJewels(settings.jewels, currentJewelsGroup)
+# 	if len(collidedJewels) != 0: # If a collision happened, then both jewels would be copied as a key pair into collided Jewels dictionary
+		
+# 		if settings.jewelVerticalOrHorizontal == 0: # if they are aligned vertically
+# 			settings.anyJewelReachedBottom = True
+# 			setVerticallyAlignedJewelsReachedBottomToTrue(settings.jewels)
+# 		else:
+# 			for movingJewel, stationaryJewel in collidedJewels.items():
+# 				movingJewel.moveDown = False
+# 				movingJewel.reachedBottom = True
+# 				moveJewels.movingRight = False
+# 				movingJewel.movingLeft = False
+
+
+# ############################################
+# def checkForTheCollisionsBetweenJewels(jewels, currentJewelsGroup):
+# 	collidedJewelsDictionary = pygame.sprite.groupcollide(jewels, currentJewelsGroup, False, False)
+# 	#print(type(collidedJewelsDictionary))
+# 	return collidedJewelsDictionary
+
+
+# ############################################
+# '''
+# -- If the jewels are vertically aligned and there are already some jewels at the bottom and had been added to the currenJewelsGroup.
+
+# -- Now, if one of the moving jewels collided with the stationary jewels at the bottom, then the movement of the jewels should be stopped.
+
+# -- Not only the movement of the collided jewel, since they all are vertically aligned, if the very bottom is stopped then the movement of
+# all the jewels above it should also be stopped.
+
+# -- Therefore, if the jewels are vertially aligned and if the bottom jewel reached bottom or collied with another stationary jewel, then
+# moveDown and reachedBottom attributes of all the jewels in that group are set to False and True respectively.
+# '''
+
+# def setVerticallyAlignedJewelsReachedBottomToTrue(jewels):
+# 	for jewel in jewels.sprites():
+# 		jewel.moveDown = False
+# 		jewel.reachedBottom = True
+# 		jewel.movingRight = False
+# 		jewel.movingLeft = False
 
 
 
