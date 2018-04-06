@@ -25,60 +25,48 @@ class Rectangle(Sprite):
 		self.moveDown = True
 		self.reachedBottom = False
 		self.jewelColor = randint(0, self.settings.colorOfJewels - 1)
-		self.imageNumber = randint(0, self.settings.totalNumberOfImages - 1)
-		self.jewelColorInRGB = (0, 0, 0)
+		self.myNumber = 0
 
 		self.shape = "rectangle"
+
 	
 		
 
 	############################################
 	def blitme(self):
 		
-		if self.jewelColor == 0: # splash-blue
+		if self.jewelColor == 0:
 			pygame.draw.rect(self.screen, (9, 132, 227), self.rect)
-			self.jewelColorInRGB = (9, 132, 227)
-		elif self.jewelColor == 1: # mintleaf
-			pygame.draw.rect(self.screen, (0, 184, 148), self.rect)
-			self.jewelColorInRGB = (0, 184, 148)
-		elif self.jewelColor == 2: # faded poster
-			pygame.draw.rect(self.screen, (129, 236, 236), self.rect)
-			self.jewelColorInRGB = (129, 236, 236)
-		elif self.jewelColor == 3: # orange-ville
-			pygame.draw.rect(self.screen, (225, 112, 85), self.rect)
-			self.jewelColorInRGB = (225, 112, 85)
-		elif self.jewelColor == 4: # peri-vinkle
-			pygame.draw.rect(self.screen, (156, 136, 255), self.rect)
-			self.jewelColorInRGB = (156, 136, 255)
-		elif self.jewelColor == 5: # riseNshine
-			pygame.draw.rect(self.screen, (251, 197, 49), self.rect)
-			self.jewelColorInRGB = (251, 197, 49)
-		elif self.jewelColor == 6: # white
-			pygame.draw.rect(self.screen, (245, 246, 250), self.rect)
-			self.jewelColorInRGB = (245, 246, 250)
-		
+			
+		elif self.jewelColor == 1:
+			pygame.draw.rect(self.screen, (214, 48, 49), self.rect)
+			
+		elif self.jewelColor == 2:
+			pygame.draw.rect(self.screen, (85, 239, 196), self.rect)
+			
+		elif self.jewelColor == 3:
+			pygame.draw.rect(self.screen, (234, 181, 67), self.rect)
+			
+
 
 	############################################
 	def update(self):
 
 		screenRect = self.screen.get_rect()
 
-		#if not self.settings.anyJewelReachedBottom and self.rect.bottom < screenRect.bottom - self.settings.jewelHeight:
-		if self.rect.bottom <= screenRect.bottom - self.settings.jewelHeight:
-			self.rect.y += settings.jewelHeight
-			#newrect = Rectangle(self.screen, self.settings)
-			#newrect.rect.y = self.rect.y
+		
+		if self.rect.bottom <= screenRect.bottom and not self.settings.anyJewelReachedBottom:
+			self.rect.bottom += 10
 			self.blitme()
-		else:
-			self.settings.anyJewelReachedBottom = True
-			self.reachedBottom = True
-			self.moveDown = False
 
-
-	def draw(self, shapeOfTheJewel, colorOfTheJewel):
-		pygame.draw.rect(self.screen, colorOfTheJewel, self.rect)
-
-
-
-
+			if self.rect.bottom +  10 > screenRect.bottom:
+				if self.settings.jewelVerticalOrHorizontal == 0:
+					self.settings.anyJewelReachedBottom = True
+					self.reachedBottom = True
+					self.moveDown = False
+				else:
+					self.reachedBottom = True
+					self.moveDown = False
+		
+		
 		
