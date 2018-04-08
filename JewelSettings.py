@@ -6,9 +6,9 @@ class Settings(object):
 		super().__init__()
 		self.jewels = Group()
 		self.isFirstIteration = True
-		self.screenWidth = 480
-		self.screenHeight = 480
-		self.backgroundColor = (0, 0, 0)
+		self.screenWidth = 720
+		self.screenHeight = 720
+		self.backgroundColor = (250, 250, 250)
 
 		# Jewel settings
 		self.jewelWidth = 30
