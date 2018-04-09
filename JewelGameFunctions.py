@@ -271,7 +271,7 @@ the co-ordinates of the three jewels should be as following:
 		Thus creating the required effect (moving jewels immediately stopping when collided with any stationed jewel)
 '''			
 
-def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup):
+def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup): # Vertical Collisions
 	collidedJewelsList = pygame.sprite.spritecollide(jewel, currentJewelsGroup, False)
 	if len(collidedJewelsList) != 0:
 		
@@ -290,108 +290,25 @@ def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewe
 
 
 
-def auxillaryCollisionFunctionWhileMovingRightOrLeft(jewel, settings, currentJewelsGroup):
+def detectCollisionsBetweenJewelsWhenMovingSidewards(jewel, currentJewelsGroup):
 	collidedJewelsList = pygame.sprite.spritecollide(jewel, currentJewelsGroup, False)
 	return collidedJewelsList
-	#if len(collidedJewelsList) != 0:
-		# if settings.jewelVerticalOrHorizontal == 0:
-		# 	if settings.jewelDirection == 1:
-		# 		jewel.movingRight = False
-		# 		jewel.rect.x -= settings.jewelWidth
-		# 		jewel.blitme()
-
-		# 		# for jewel in settings.jewels.sprites():
-		# 		# 	jewel.movingRight = False
-		# 		# 	jewel.rect.x -= settings.jewelWidth
-		# 		# 	jewel.blitme()
-
-		# 	else:
-		# 		jewel.movingLeft = False
-		# 		jewel.rect.x += settings.jewelWidth
-		# 		jewel.blitme()
-		# else:
-		# 	for jewel in settings.jewels.sprites():
-		# 		if settings.jewelDirection == 1:
-		# 			jewel.movingRight = False
-		# 			jewel.rect.x -= settings.jewelWidth
-
-		# 		else:
-		# 			jewel.movingLeft = False
-		# 			jewel.rect.x += settings.jewelWidth
-
-		# 		#jewel.rect.x += (settings.jewelDirection * settings.jewelWidth)
-		# 		jewel.blitme()
-
-			# for jewel in settings.jewels.sprites():
-			# 	jewel.movingLeft = False
-			# 	jewel.rect.x += settings.jewelWidth
-			# 	jewel.blitme()
-	# if len(collidedJewelsList) != 0:
-	# 	print(str(collidedJewelsList[0].rect.x) + "  X  " +  str(jewel.rect.x))
-	# 	print(str(collidedJewelsList[0].rect.y) + "  Y  " +  str(jewel.rect.y))
-	# 	print(str(collidedJewelsList[0].rect.top) + "  top  " +  str(jewel.rect.top))
-	# 	print(str(collidedJewelsList[0].rect.bottom) + "  bottom  " +  str(jewel.rect.bottom))
+	
 
 
-def auxillaryFunctionVerticalCollidedWhileMovingLeftOrRight(jewel, settings):
-	if settings.jewelDirection == 1:
-		jewel.movingRight = False
-		jewel.rect.x -= settings.jewelWidth
-		#jewel.blitme()
-
-		# for jewel in settings.jewels.sprites():
-		# 	jewel.movingRight = False
-		# 	jewel.rect.x -= settings.jewelWidth
-		# 	jewel.blitme()
-
-	else:
-		jewel.movingLeft = False
-		jewel.rect.x += settings.jewelWidth
-	jewel.blitme()
+def change_The_Settings_Of_Vertically_Aligned_Jewels_Collided_When_Moving_Sidewards(settings):
+	for jewel in settings.jewels.sprites():
+		if jewel.positionChanged:
+			jewel.rect.x -= (settings.jewelDirection * settings.jewelWidth)
 
 
-def auxillaryFunctionHorizontalCollidedWhileMovingLeftOrRight(currentJewl, settings):
-	# for jewel in settings.jewels.sprites():
-	# 	#if jewel.rect.x == currentJewl.rect.x and jewel.rect.y == currentJewl.rect.y:
-	# 	if settings.jewelDirection == 1:
-	# 		jewel.movingRight = False
-	# 		jewel.rect.x -= settings.jewelWidth
-
-	# 	else:
-	# 		jewel.movingLeft = False
-	# 		jewel.rect.x += settings.jewelWidth
-	# 	jewel.blitme()
-
-
+def change_The_Settings_Of_Horizontally_Aligned_Jewels_Collided_When_Moving_Sidewards(settings):
+	
 	for jewel in settings.jewels.sprites():
 		jewel.rect.x -= (settings.jewelDirection * settings.jewelWidth)
-		if settings.jewelDirection == 1:
-			jewel.movingRight = False
-		else:
-			jewel.movingLeft = False
-		jewel.blitme()
 
 
-		# else:
-		# 	if settings.jewelDirection == 1:
-		# 		jewel.movingRight = False
-				
-
-		# 	else:
-		# 		jewel.movingLeft = False
-
-		# if settings.jewelDirection == 1:
-		# 	jewel.movingRight = False
-		# 	jewel.rect.x -= settings.jewelWidth
-
-		# else:
-		# 	jewel.movingLeft = False
-		# 	jewel.rect.x += settings.jewelWidth
-
-		# jewel.blitme()
-				
-
-		#jewel.rect.x += (settings.jewelDirection * settings.jewelWidth)
+		
 		
 
 
@@ -487,35 +404,22 @@ def drawTheShapeAtTheNewCoordinates(screen, jewel, shapeOfTheJewel, colorOfTheJe
 def moveJewels(settings, screen, jewels, currentJewelsGroup):
 	didJewelGroupReachedBottom = checkIfTheJewelGroupReachedBottom(settings)
 	if not didJewelGroupReachedBottom:
-
-		
-
 		screenRect = screen.get_rect()
 		anyJewelAtTheEdge = anyJewelReachedEdge(settings, screen, jewels)
-
 		isMovingRightOrLeft = settings.jewelMovingRight or settings.jewelMovingLeft
 
 		for jewel in settings.jewels.sprites():
 			if isMovingRightOrLeft and (not anyJewelAtTheEdge) and (jewel.movingRight or jewel.movingLeft):
 				jewel.rect.x += (settings.jewelWidth * settings.jewelDirection)
-				collidedJewelsList = auxillaryCollisionFunctionWhileMovingRightOrLeft(jewel, settings, currentJewelsGroup)
+				jewel.positionChanged = True
+				collidedJewelsList = detectCollisionsBetweenJewelsWhenMovingSidewards(jewel, currentJewelsGroup)
 				if len(collidedJewelsList) != 0:
-					# print(str(collidedJewelsList[0].rect.x) + "  X  " +  str(jewel.rect.x))
-					# print(str(collidedJewelsList[0].rect.y) + "  Y  " +  str(jewel.rect.y))
-					# print(str(collidedJewelsList[0].rect.top) + "  top  " +  str(jewel.rect.top))
-					# print(str(collidedJewelsList[0].rect.bottom) + "  bottom  " +  str(jewel.rect.bottom))
-					# print(str(collidedJewelsList[0].rect.right) + "  right  " +  str(jewel.rect.right))
-					# print(str(collidedJewelsList[0].rect.left) + "  left  " +  str(jewel.rect.left))
 					if settings.jewelVerticalOrHorizontal == 0:
-						auxillaryFunctionVerticalCollidedWhileMovingLeftOrRight(jewel, settings)
+						change_The_Settings_Of_Vertically_Aligned_Jewels_Collided_When_Moving_Sidewards(settings)
+
 					else:
-						auxillaryFunctionHorizontalCollidedWhileMovingLeftOrRight(jewel, settings)
-						break
-						 
+						change_The_Settings_Of_Horizontally_Aligned_Jewels_Collided_When_Moving_Sidewards(settings)	
 						
-
-
-
 
 
 def determineRightOrLeftForEachJewel(settings):

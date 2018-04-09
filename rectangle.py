@@ -28,6 +28,7 @@ class Rectangle(Sprite):
 		self.myNumber = 0
 
 		self.shape = "rectangle"
+		self.positionChanged = False
 
 	
 		
