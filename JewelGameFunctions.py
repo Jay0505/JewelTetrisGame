@@ -150,7 +150,7 @@ def funcResponsibleForMovementOfJewelsAndScreenUpdate(settings, currentJewelsGro
 	jewelVerticalOrHorizontal = settings.jewelVerticalOrHorizontal
 	jewels = settings.jewels
 	checkEvents(settings, screen, jewels, currentJewelsGroup) # Checks for any key press or release events
-	forwardJewels(settings, jewels, jewelType, currentJewelsGroup) # move the jewels in the downward direction
+	forwardJewels(settings, jewels, jewelType, currentJewelsGroup, screen) # move the jewels in the downward direction
 	moveJewels(settings, screen, jewels, currentJewelsGroup) # move the jewels either right or left based upon the key pressed
 	updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup) # updates the screen with the latest positions of the jewels
 
@@ -175,8 +175,6 @@ def createJewelGroup(settings, screen):
 ############################################
 def createVerticallyAlignedJewels(settings, screen, jewelType, jewels):
 	numberOfJewels = fixTheNumberOfJewelsToBeFormed(settings)
-	# yCoordinate = 0
-	#xCoordinate = 250
 	xCoordinate = determineTheXCoordinateOfTheNewlyFormedJewel(settings)
 	# for number in range(numberOfJewels - 1, -1, -1):
 	for number in range(numberOfJewels):
@@ -226,17 +224,17 @@ def fixTheNumberOfJewelsToBeFormed(settings):
 -- This function is responsible for the downward movement of the jewel. Update is the method in the respective jewel class.
 If we write jewels.update(), then the update method is applied on each and every jewel in the jewels group.
 '''
-def forwardJewels(settings, jewels, jewelType, currentJewelsGroup):
+def forwardJewels(settings, jewels, jewelType, currentJewelsGroup, screen):
 	#changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup)
-	updateJewel(settings, currentJewelsGroup)
+	updateJewel(settings, currentJewelsGroup, screen)
 
 ############################################
-def updateJewel(settings, currentJewelsGroup):
+def updateJewel(settings, currentJewelsGroup, screen):
 	
 	for jewel in settings.jewels.sprites():
 		if jewel.moveDown and not jewel.reachedBottom:
 			jewel.update()
-			checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup)
+			checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup, screen)
 
 '''
 -- A collision between two entities is determined by comparing the rect attributes (xCoordinate and yCoordinate) of both the entities
@@ -271,7 +269,7 @@ the co-ordinates of the three jewels should be as following:
 		Thus creating the required effect (moving jewels immediately stopping when collided with any stationed jewel)
 '''			
 
-def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup): # Vertical Collisions
+def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup, screen): # Vertical Collisions
 	collidedJewelsList = pygame.sprite.spritecollide(jewel, currentJewelsGroup, False)
 	if len(collidedJewelsList) != 0:
 		
@@ -285,8 +283,13 @@ def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewe
 			jewel.movingLeft = False
 			jewel.rect.bottom = collidedJewelsList[0].rect.top
 			jewel.blitme()
-			currentJewelsGroup.add(jewel)
-			settings.jewels.remove(jewel)
+
+		checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(jewel, collidedJewelsList[0], settings, currentJewelsGroup, screen)
+
+			#currentJewelsGroup.add(jewel)
+			#settings.jewels.remove(jewel)
+
+
 
 
 
@@ -305,7 +308,8 @@ def change_The_Settings_Of_Vertically_Aligned_Jewels_Collided_When_Moving_Sidewa
 def change_The_Settings_Of_Horizontally_Aligned_Jewels_Collided_When_Moving_Sidewards(settings):
 	
 	for jewel in settings.jewels.sprites():
-		jewel.rect.x -= (settings.jewelDirection * settings.jewelWidth)
+		if not jewel.reachedBottom:
+			jewel.rect.x -= (settings.jewelDirection * settings.jewelWidth)
 
 
 		
@@ -425,12 +429,14 @@ def moveJewels(settings, screen, jewels, currentJewelsGroup):
 def determineRightOrLeftForEachJewel(settings):
 	if settings.jewelDirection == 1:
 		for jewel in settings.jewels.sprites():
-			jewel.movingRight = True
-			jewel.movingLeft = False
+			if not jewel.reachedBottom:
+				jewel.movingRight = True
+				jewel.movingLeft = False
 	else:
 		for jewel in settings.jewels.sprites():
-			jewel.movingLeft = True
-			jewel.movingRight = False
+			if not jewel.reachedBottom:
+				jewel.movingLeft = True
+				jewel.movingRight = False
 
 
 def whenCollidedSetTheAppropriateRightOrLeftValuesForJewels(settings, collidedJewels):
@@ -507,9 +513,93 @@ def groupTheBottomReachedJewelsIntoOne(settings, currentJewelsGroup):
 
 
 
+##########################--------------------------------------------######################################################
+
+def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(movingJewel, stationaryJewel, settings, currentJewelsGroup, screen):
+	
+	movingJewelTupleList = []
+	stationaryJewelTupleList = []
+
+	movingJewelTupleList.append((movingJewel.rect.x, movingJewel.rect.y))
+	stationaryJewelTupleList.append((stationaryJewel.rect.x, stationaryJewel.rect.y))
+
+	listOfMatchedJewelsUp = checkForSameJewelsHorizontallyUpwards(movingJewel, stationaryJewel, settings, screen)
+	listOfMatchedJewelsDown = checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settings, screen)
+
+	if (len(listOfMatchedJewelsUp) != 0 or  len(listOfMatchedJewelsDown) != 0) and (len(listOfMatchedJewelsDown) + len(listOfMatchedJewelsUp) >= 2):
+
+		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsUp, settings.jewels)
+		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsDown, currentJewelsGroup)
+
+		removeAJewelFromTheGroupSpecifiedInTheList(movingJewelTupleList, settings.jewels)
+		removeAJewelFromTheGroupSpecifiedInTheList(stationaryJewelTupleList, currentJewelsGroup)
 
 
 
+
+
+
+def checkForSameJewelsHorizontallyUpwards(movingJewel, stationaryJewel, settings, screen):
+	listOfCoordinatesUp = []
+	colorOfTheJewel = movingJewel.jewelColorInRGB
+	colorName = movingJewel.jewelName
+	startXCoordinateUp = movingJewel.rect.x
+	startYCoordinateUp = movingJewel.rect.y
+	startYCoordinateUp -= settings.jewelHeight
+	colorAtTheNewRect = (0, 0, 0)
+
+	while startYCoordinateUp >= 0:
+		tempYCoordinate = startYCoordinateUp
+		colorAtTheNewRect = screen.get_at((startXCoordinateUp, tempYCoordinate))
+		trimmedColorAtTheNewRect = trimTheRGBColorValue(colorAtTheNewRect)
+		startYCoordinateUp -= settings.jewelHeight
+		if colorOfTheJewel == trimmedColorAtTheNewRect:
+			listOfCoordinatesUp.append((startXCoordinateUp, tempYCoordinate))
+		else:
+			break
+	
+	return listOfCoordinatesUp
+
+
+def checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settings, screen):
+	listOfCoordinatesDown = []
+	colorOfTheJewel = movingJewel.jewelColorInRGB
+	colorName = movingJewel.jewelName
+	
+	startXCoordinateDown = stationaryJewel.rect.x
+	startYCoordinateDown = stationaryJewel.rect.y
+	colorAtTheNewRect = (0, 0, 0)
+
+	while startYCoordinateDown < settings.screenHeight:
+		tempYCoordinate = startYCoordinateDown
+		colorAtTheNewRect = screen.get_at((startXCoordinateDown, tempYCoordinate))
+		trimmedColorAtTheNewRect = trimTheRGBColorValue(colorAtTheNewRect)
+		startYCoordinateDown += settings.jewelHeight
+
+		if colorOfTheJewel == trimmedColorAtTheNewRect:
+			listOfCoordinatesDown.append((startXCoordinateDown, tempYCoordinate))
+		else:
+			break
+
+	return listOfCoordinatesDown
+
+
+def removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, jewels):
+	if len(listOfCoordinates) != 0:
+		for xyTuple in listOfCoordinates:
+			getTheJewelAtAParticularCoordinates(xyTuple[0], xyTuple[1], jewels)
+
+
+
+def getTheJewelAtAParticularCoordinates(Xcoordinate, Ycoordinate, jewels):
+	found = False
+	for jewel in jewels.sprites():
+		if jewel.rect.x == Xcoordinate and jewel.rect.y == Ycoordinate:
+			jewels.remove(jewel)
+
+
+def trimTheRGBColorValue(RGBColorTuple):
+	return (RGBColorTuple[0], RGBColorTuple[1], RGBColorTuple[2])
 			
 
 ######################################################## SCREEN UPDATES ####################################################

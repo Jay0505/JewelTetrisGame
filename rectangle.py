@@ -20,8 +20,8 @@ class Rectangle(Sprite):
 		self.centerX = float(self.rect.centerx)
 		self.centerY = float(self.rect.centery)
 
-		self.movingRight = True
-		self.movingLeft = True
+		self.movingRight = False
+		self.movingLeft = False
 		self.moveDown = True
 		self.reachedBottom = False
 		self.jewelColor = randint(0, self.settings.colorOfJewels - 1)
@@ -29,6 +29,8 @@ class Rectangle(Sprite):
 
 		self.shape = "rectangle"
 		self.positionChanged = False
+		self.jewelColorInRGB = (0, 0, 0)
+		self.jewelName = " "
 
 	
 		
@@ -38,15 +40,22 @@ class Rectangle(Sprite):
 		
 		if self.jewelColor == 0:
 			pygame.draw.rect(self.screen, (9, 132, 227), self.rect)
+			self.jewelColorInRGB = (9, 132, 227)
+			self.jewelName = "Blue"
 			
 		elif self.jewelColor == 1:
 			pygame.draw.rect(self.screen, (214, 48, 49), self.rect)
+			self.jewelColorInRGB = (214, 48, 49)
+			self.jewelName = "Red"
 			
 		elif self.jewelColor == 2:
 			pygame.draw.rect(self.screen, (85, 239, 196), self.rect)
-			
+			self.jewelColorInRGB = (85, 239, 196)
+			self.jewelName = "Green"
 		elif self.jewelColor == 3:
 			pygame.draw.rect(self.screen, (234, 181, 67), self.rect)
+			self.jewelColorInRGB =(234, 181, 67)
+			self.jewelName = "Yellow"
 			
 
 
