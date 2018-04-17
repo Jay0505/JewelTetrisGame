@@ -24,6 +24,7 @@ class Settings(object):
 		self.anyJewelReachedEdge = False
 		self.anyJewelReachedBottom = False
 		self.numberOfJewelsInEachIteration = 0
+		self.allTheJewelsReachedBottom = False
  
 		
 		self.probableXCoordinates = []

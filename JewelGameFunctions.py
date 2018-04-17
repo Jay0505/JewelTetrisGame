@@ -4,6 +4,7 @@ import pygame
 from pygame.sprite import Group
 from random import randint
 from rectangle import Rectangle
+from collisionVariables import Collision
 
 
 ################################# Settings #################################################
@@ -28,6 +29,7 @@ def resetAllTheSettings(settings):
 	settings.numberOfJewels = 0
 	del settings.listOfJewels[:]
 	settings.count = 0
+
 
 
 
@@ -235,6 +237,8 @@ def updateJewel(settings, currentJewelsGroup, screen):
 		if jewel.moveDown and not jewel.reachedBottom:
 			jewel.update()
 			checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup, screen)
+			if len(settings.jewels) == 0:
+				settings.allTheJewelsReachedBottom = True
 
 '''
 -- A collision between two entities is determined by comparing the rect attributes (xCoordinate and yCoordinate) of both the entities
@@ -285,6 +289,7 @@ def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewe
 			jewel.blitme()
 
 		checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(jewel, collidedJewelsList[0], settings, currentJewelsGroup, screen)
+		#print('length of setting jewels ' + str(len(settings.jewels)))
 
 			#currentJewelsGroup.add(jewel)
 			#settings.jewels.remove(jewel)
@@ -455,12 +460,6 @@ def whenCollidedSetTheAppropriateRightOrLeftValuesForJewels(settings, collidedJe
 					movingJewel.movingRight = False
 				else:
 					movingJewel.movingLeft = False
-		#movingJewel.movingRight = False if movingJewel.movingRight else movingJewel.movingLeft = False
-
-
-
-
-
 				
 
 ############################################
@@ -485,23 +484,28 @@ def checkIfTheJewelGroupReachedBottom(settings):
 	reachedBottom = False
 	numberOfJewelsReachedBottomIfHorizontallyAligned = 0
 
-	if settings.jewelVerticalOrHorizontal == 0:
-		for jewel in settings.jewels.sprites():
-			if jewel.reachedBottom:
-				reachedBottom = True
-				break
+	if len(settings.jewels) != 0:
+		if settings.jewelVerticalOrHorizontal == 0:
+			for jewel in settings.jewels.sprites():
+				if jewel.reachedBottom:
+					reachedBottom = True
+					break
 
-		return reachedBottom
+			return reachedBottom
+
+		else:
+			for jewel in settings.jewels.sprites():
+				if jewel.reachedBottom:
+					numberOfJewelsReachedBottomIfHorizontallyAligned += 1
+
+			if len(settings.jewels) == numberOfJewelsReachedBottomIfHorizontallyAligned:
+				reachedBottom = True
+			
+			return reachedBottom
 
 	else:
-		for jewel in settings.jewels.sprites():
-			if jewel.reachedBottom:
-				numberOfJewelsReachedBottomIfHorizontallyAligned += 1
-
-		if len(settings.jewels) == numberOfJewelsReachedBottomIfHorizontallyAligned:
-			reachedBottom = True
-		
-		return reachedBottom
+		if settings.allTheJewelsReachedBottom:
+			return True
 
 
 
@@ -519,28 +523,46 @@ def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(moving
 	
 	movingJewelTupleList = []
 	stationaryJewelTupleList = []
+	up = "up"
+	down = "down"
+	right = "right"
+	left = "left"
 
 	movingJewelTupleList.append((movingJewel.rect.x, movingJewel.rect.y))
-	stationaryJewelTupleList.append((stationaryJewel.rect.x, stationaryJewel.rect.y))
+	#stationaryJewelTupleList.append((stationaryJewel.rect.x, stationaryJewel.rect.y))
 
-	listOfMatchedJewelsUp = checkForSameJewelsHorizontallyUpwards(movingJewel, stationaryJewel, settings, screen)
-	listOfMatchedJewelsDown = checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settings, screen)
+	# listOfMatchedJewelsUp = checkForSameJewelsHorizontallyUpwards(movingJewel, stationaryJewel, settings, screen)
+	# listOfMatchedJewelsDown = checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settings, screen)
+	# if (len(listOfMatchedJewelsUp) != 0 or  len(listOfMatchedJewelsDown) != 0) and (len(listOfMatchedJewelsDown) + len(listOfMatchedJewelsUp) >= 2):
+
+	# 	removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsUp, settings.jewels)
+	# 	removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsDown, currentJewelsGroup)
+
+	# 	removeAJewelFromTheGroupSpecifiedInTheList(movingJewelTupleList, settings.jewels)
+	# 	removeAJewelFromTheGroupSpecifiedInTheList(stationaryJewelTupleList, currentJewelsGroup)
+
+	
+	print('------------------------------------------------------------------------------------------')
+	listOfMatchedJewelsUp = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, screen, up)
+	listOfMatchedJewelsDown = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, screen, down)
+	listOfMatchedJewelsLeft = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, screen, left)
+	listOfMatchedJewelsRight = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, screen, right)
 
 	if (len(listOfMatchedJewelsUp) != 0 or  len(listOfMatchedJewelsDown) != 0) and (len(listOfMatchedJewelsDown) + len(listOfMatchedJewelsUp) >= 2):
-
+		#print(str(len(listOfMatchedJewelsUp)) + "  " + str(len(listOfMatchedJewelsDown)))
 		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsUp, settings.jewels)
 		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsDown, currentJewelsGroup)
 
 		removeAJewelFromTheGroupSpecifiedInTheList(movingJewelTupleList, settings.jewels)
-		removeAJewelFromTheGroupSpecifiedInTheList(stationaryJewelTupleList, currentJewelsGroup)
+		#removeAJewelFromTheGroupSpecifiedInTheList(stationaryJewelTupleList, currentJewelsGroup)
 
 
 
 
-
-
+############################################
 def checkForSameJewelsHorizontallyUpwards(movingJewel, stationaryJewel, settings, screen):
 	listOfCoordinatesUp = []
+	screenRect = screen.get_rect()
 	colorOfTheJewel = movingJewel.jewelColorInRGB
 	colorName = movingJewel.jewelName
 	startXCoordinateUp = movingJewel.rect.x
@@ -561,6 +583,185 @@ def checkForSameJewelsHorizontallyUpwards(movingJewel, stationaryJewel, settings
 	return listOfCoordinatesUp
 
 
+
+def checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, screen, direction):
+
+	collisionVariables = Collision()
+	#print(collisionVariables.collisionSpeedFactor)
+	listOfCoordinates = []
+	setTheCollisionDirectionValue(collisionVariables, direction)
+	setTheValuesForVariableAndNonVariableCoordinates(collisionVariables, movingJewel)
+	setTheIncrementOrDecrementValueForCollisionClass(collisionVariables)
+	setTheCollisionSpeedFactor(collisionVariables, settings)
+	setTheBoundaryValue(collisionVariables, screen)
+
+	if collisionVariables.collisionDirection == "left":
+		pass
+
+	elif collisionVariables.collisionDirection == "right":
+		pass
+
+	elif collisionVariables.collisionDirection == "up":
+		listOfCoordinates =  checkForTheSameJewelsUpOrLeft(collisionVariables, movingJewel, settings, screen)
+
+	elif collisionVariables.collisionDirection == "down":
+		listOfCoordinates =  checkForTheSameJewelsDownOrRight(collisionVariables, movingJewel, settings, screen)
+
+	# print('direction ' + direction + " is over")
+	return listOfCoordinates
+
+
+############################################
+def setTheCollisionDirectionValue(collisionVariables, direction):
+	if direction == "left":
+		collisionVariables.collisionDirection = "left"
+	elif direction == "right":
+		collisionVariables.collisionDirection = "right"
+	elif direction == "up":
+		collisionVariables.collisionDirection = "up"
+	elif direction == "down":
+		collisionVariables.collisionDirection = "down"
+
+
+			
+############################################
+def setTheValuesForVariableAndNonVariableCoordinates(collisionVariables, movingJewel):
+	startXCoordinate = movingJewel.rect.x
+	startYCoordinate = movingJewel.rect.y
+
+	if collisionVariables.collisionDirection == "left" or collisionVariables.collisionDirection == "right":
+		collisionVariables.variableCoordinate = startXCoordinate
+		collisionVariables.nonVariableCoordinate = startYCoordinate
+
+
+	elif collisionVariables.collisionDirection == "up" or collisionVariables.collisionDirection == "down":
+		collisionVariables.variableCoordinate = startYCoordinate
+		collisionVariables.nonVariableCoordinate = startXCoordinate
+
+	#print('variable and nonvariable')
+
+############################################
+def setTheIncrementOrDecrementValueForCollisionClass(collisionVariables):
+	if collisionVariables.collisionDirection == "left" or collisionVariables.collisionDirection == "up":
+		collisionVariables.incrementOrDecrement = -1
+
+	if collisionVariables.collisionDirection == "right" or collisionVariables.collisionDirection == "down":
+		collisionVariables.incrementOrDecrement = 1
+
+	#print('increment or decrement')
+
+############################################
+def setTheCollisionSpeedFactor(collisionVariables, settings):
+	if collisionVariables.collisionDirection == "left" or collisionVariables.collisionDirection == "right":
+		collisionVariables.collisionSpeedFactor = settings.jewelWidth
+
+	if collisionVariables.collisionDirection == "up" or collisionVariables.collisionDirection == "down":
+		collisionVariables.collisionSpeedFactor = settings.jewelHeight
+
+	#print('collision speed factor')
+
+############################################
+def setTheBoundaryValue(collisionVariables, screen):
+	screenRect = screen.get_rect()
+
+	if collisionVariables.collisionDirection == "left" or collisionVariables.collisionDirection == "up":
+		collisionVariables.boundaryValue = screenRect.top
+
+	if collisionVariables.collisionDirection == "right" or collisionVariables.collisionDirection == "down":
+		collisionVariables.boundaryValue = screenRect.right
+
+	#print('boundary value')
+
+############################################
+def addTheValuesToTheListAsATuple(listOfCoordinates, valueAtTheIndexZero, valueAtTheIndexOne):
+	listOfCoordinates.append((valueAtTheIndexZero, valueAtTheIndexOne))
+	return listOfCoordinates
+
+def getColorAtParticularCoordinates(screen, xCoordinate, yCoordinate):
+	return screen.get_at((xCoordinate, yCoordinate))
+	
+
+
+############################################
+def checkForTheSameJewelsUpOrLeft(collisionVariables, movingJewel, settings, screen):
+	#print('uporleft')
+	listOfCoordinatesOfJewelsMatched = []
+	listofColors = []
+	variableCoordinate = collisionVariables.variableCoordinate - collisionVariables.collisionSpeedFactor
+	nonVariableCoordinate = collisionVariables.nonVariableCoordinate
+	colorOfTheJewel = movingJewel.jewelColorInRGB
+
+
+	while variableCoordinate >= collisionVariables.boundaryValue:
+		#print('up or left while loop entered')
+		colorAtTheNewRect = ()
+
+		tempCoordinate = variableCoordinate
+
+		if collisionVariables.collisionDirection == "left":
+			colorAtTheNewRect = getColorAtParticularCoordinates(screen, tempCoordinate, nonVariableCoordinate)
+		elif collisionVariables.collisionDirection == "up":
+			colorAtTheNewRect = getColorAtParticularCoordinates(screen, nonVariableCoordinate, tempCoordinate)
+
+		
+		trimmedColorAtTheNewRect = trimTheRGBColorValue(colorAtTheNewRect)
+		variableCoordinate -= collisionVariables.collisionSpeedFactor
+		if colorOfTheJewel == trimmedColorAtTheNewRect:
+			print('up ' + str(colorAtTheNewRect) + " " + str(colorOfTheJewel))
+			listofColors.append((colorOfTheJewel, trimmedColorAtTheNewRect))
+
+			if collisionVariables.collisionDirection == "left":
+				listOfCoordinatesOfJewelsMatched.append((tempCoordinate, nonVariableCoordinate))
+			elif collisionVariables.collisionDirection == "up":
+				listOfCoordinatesOfJewelsMatched.append((nonVariableCoordinate, tempCoordinate))
+
+		else:
+			break
+
+	# print('---------up------------------')
+	# for tup in listofColors:
+	# 	print(tup)
+	return listOfCoordinatesOfJewelsMatched
+
+############################################
+def checkForTheSameJewelsDownOrRight(collisionVariables, movingJewel, settings, screen):
+	#print('downorright')
+	listOfCoordinatesOfJewelsMatched = []
+	listofColors = []
+	variableCoordinate = collisionVariables.variableCoordinate + collisionVariables.collisionSpeedFactor
+	nonVariableCoordinate = collisionVariables.nonVariableCoordinate
+	colorOfTheJewel = movingJewel.jewelColorInRGB
+
+	while variableCoordinate < collisionVariables.boundaryValue:
+		tempCoordinate = variableCoordinate
+		colorAtTheNewRect = ()
+
+		if collisionVariables.collisionDirection == "right":
+			colorAtTheNewRect = getColorAtParticularCoordinates(screen, tempCoordinate, nonVariableCoordinate)
+		elif collisionVariables.collisionDirection == "down":
+			colorAtTheNewRect = getColorAtParticularCoordinates(screen, nonVariableCoordinate, tempCoordinate)
+		
+		trimmedColorAtTheNewRect = trimTheRGBColorValue(colorAtTheNewRect)
+		variableCoordinate += collisionVariables.collisionSpeedFactor
+		if colorOfTheJewel == trimmedColorAtTheNewRect:
+			print('down ' + str(colorAtTheNewRect) + " " + str(colorOfTheJewel))
+			listofColors.append((colorOfTheJewel, trimmedColorAtTheNewRect))
+
+			if collisionVariables.collisionDirection == "right":
+				listOfCoordinatesOfJewelsMatched.append((tempCoordinate, nonVariableCoordinate))
+			elif collisionVariables.collisionDirection == "down":
+				listOfCoordinatesOfJewelsMatched.append((nonVariableCoordinate, tempCoordinate))
+
+		else:
+			break
+	# print('---------down------------------')
+	# for tup in listofColors:
+	# 	print(tup)
+	return listOfCoordinatesOfJewelsMatched
+
+
+	
+############################################
 def checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settings, screen):
 	listOfCoordinatesDown = []
 	colorOfTheJewel = movingJewel.jewelColorInRGB
@@ -583,21 +784,20 @@ def checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settin
 
 	return listOfCoordinatesDown
 
-
+############################################
 def removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, jewels):
 	if len(listOfCoordinates) != 0:
 		for xyTuple in listOfCoordinates:
 			getTheJewelAtAParticularCoordinates(xyTuple[0], xyTuple[1], jewels)
 
 
-
+############################################
 def getTheJewelAtAParticularCoordinates(Xcoordinate, Ycoordinate, jewels):
-	found = False
 	for jewel in jewels.sprites():
 		if jewel.rect.x == Xcoordinate and jewel.rect.y == Ycoordinate:
 			jewels.remove(jewel)
 
-
+############################################
 def trimTheRGBColorValue(RGBColorTuple):
 	return (RGBColorTuple[0], RGBColorTuple[1], RGBColorTuple[2])
 			
