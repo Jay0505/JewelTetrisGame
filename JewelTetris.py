@@ -13,9 +13,9 @@ def run_game():
 	screen = pygame.display.set_mode((settings.screenWidth, settings.screenHeight))
 	screenRe = screen.get_rect()
 	screen.fill((150, 150, 150))
-	# print('top ' + str(screenRe.top))
-	# print('right ' + str(screenRe.right))
-	# print('left ' + str(screenRe.left))
+	print('top ' + str(screenRe.top))
+	print('right ' + str(screenRe.right))
+	print('left ' + str(screenRe.left))
 	
 
 	
