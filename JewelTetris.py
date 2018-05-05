@@ -32,6 +32,7 @@ def run_game():
 		else:
 			if jgf.checkIfTheJewelGroupReachedBottom(settings):
 				jgf.groupTheBottomReachedJewelsIntoOne(settings, currentJewelsGroup)
+				jgf.moveJewelsDownIfAfterTheRemovalOfMatchedJewels(currentJewelsGroup, settings, screen)
 				jgf.resetAllTheSettings(settings)
 				jgf.funcResponsibleForCreationAndMovementOfJewels(settings, currentJewelsGroup, screen)
 			else:

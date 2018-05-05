@@ -29,6 +29,7 @@ class Settings(object):
 		
 		self.probableXCoordinates = []
 		self.listOfJewels = []
+		self.colorOfTheEmptyRect = (250, 250, 250, 255)
 
 
 		

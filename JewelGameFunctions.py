@@ -18,7 +18,6 @@ of the jewels.
 
 def resetAllTheSettings(settings):
 	# Jewel settings
-	settings.jewels.empty()
 	settings.jewelVerticalOrHorizontal = 1 # vertical = 0; Horizontal = 1
 	settings.jewelType = 1
 	settings.jewelsLimit = 4
@@ -228,9 +227,17 @@ def fixTheNumberOfJewelsToBeFormed(settings):
 If we write jewels.update(), then the update method is applied on each and every jewel in the jewels group.
 '''
 def forwardJewels(settings, jewels, jewelType, currentJewelsGroup, screen):
-	#changeTheSettingsOfTheJewelsIfCollided(settings, currentJewelsGroup)
-
 	updateJewel(settings, currentJewelsGroup, screen)
+	#if checkIfTheJewelGroupReachedBottom(settings):
+		# print('before ' + str(len(settings.jewels)))
+		# for jewel in settings.jewels.sprites():
+		# 	checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherLeftAndRight(jewel, settings, currentJewelsGroup, screen)
+
+		# print('after ' + str(len(settings.jewels)))
+		
+	
+
+
 
 ############################################
 def updateJewel(settings, currentJewelsGroup, screen):
@@ -293,7 +300,7 @@ def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewe
 			jewel.rect.bottom -= settings.jewelSpeedFactor
 			jewel.blitme()
 
-		checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(jewel, collidedJewelsList[0], settings, currentJewelsGroup, screen)
+		checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherUpAndDown(jewel, collidedJewelsList[0], settings, currentJewelsGroup, screen)
 		#print('length of setting jewels ' + str(len(settings.jewels)))
 
 			#currentJewelsGroup.add(jewel)
@@ -519,36 +526,52 @@ def groupTheBottomReachedJewelsIntoOne(settings, currentJewelsGroup):
 	for jewel in settings.jewels.sprites():
 		currentJewelsGroup.add(jewel)
 
+	settings.jewels.empty()
+
 
 
 
 ##########################--------------------------------------------######################################################
 
-def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(movingJewel, stationaryJewel, settings, currentJewelsGroup, screen):
+def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherUpAndDown(movingJewel, stationaryJewel, settings, currentJewelsGroup, screen):
 	
 	movingJewelTupleList = []
 	stationaryJewelTupleList = []
 	up = "up"
 	down = "down"
-	right = "right"
-	left = "left"
+	
 	#movingJewelCenter = movingJewel.rect.center
 	movingJewelTupleList.append((movingJewel.rect.x, movingJewel.rect.y))
 	
 	listOfMatchedJewelsUp = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, up)
 	listOfMatchedJewelsDown = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, down)
-	listOfMatchedJewelsLeft = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, left)
-	listOfMatchedJewelsRight = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, right)
+	
 
 	if (len(listOfMatchedJewelsUp) != 0 or  len(listOfMatchedJewelsDown) != 0) and (len(listOfMatchedJewelsDown) + len(listOfMatchedJewelsUp) >= 2):
 		
 		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsUp, settings.jewels)
 		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsDown, currentJewelsGroup)
 
+
 		removeAJewelFromTheGroupSpecifiedInTheList(movingJewelTupleList, settings.jewels)
-		#removeAJewelFromTheGroupSpecifiedInTheList(stationaryJewelTupleList, currentJewelsGroup)
 
 
+def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherLeftAndRight(movingJewel, settings, currentJewelsGroup, screen):
+	right = "right"
+	left = "left"
+
+	movingJewelTupleList = []
+	movingJewelTupleList.append((movingJewel.rect.x, movingJewel.rect.y))
+
+	listOfMatchedJewelsLeft = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, left)
+	listOfMatchedJewelsRight = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, right)
+
+	if (len(listOfMatchedJewelsLeft) != 0 or  len(listOfMatchedJewelsRight) != 0) and (len(listOfMatchedJewelsLeft) + len(listOfMatchedJewelsRight) >= 2):
+		removeAJewelFromTheGroupSpecifiedInTheListLeftOrRight(listOfMatchedJewelsLeft, settings.jewels, currentJewelsGroup)
+		removeAJewelFromTheGroupSpecifiedInTheListLeftOrRight(listOfMatchedJewelsRight, settings.jewels, currentJewelsGroup)
+
+
+		removeAJewelFromTheGroupSpecifiedInTheList(movingJewelTupleList, settings.jewels)
 
 
 def checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, direction):
@@ -562,10 +585,10 @@ def checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewels
 	setTheBoundaryValue(collisionVariables, screen)
 
 	if collisionVariables.collisionDirection == "left":
-		pass
+		listOfCoordinates = checkForTheSameJewelsUpOrLeft(collisionVariables, movingJewel, settings, currentJewelsGroup, screen)
 
 	elif collisionVariables.collisionDirection == "right":
-		pass
+		listOfCoordinates =  checkForTheSameJewelsDownOrRight(collisionVariables, movingJewel, settings, currentJewelsGroup, screen)
 
 	elif collisionVariables.collisionDirection == "up":
 		listOfCoordinates =  checkForTheSameJewelsUpOrLeft(collisionVariables, movingJewel, settings, currentJewelsGroup, screen)
@@ -640,8 +663,23 @@ def addTheValuesToTheListAsATuple(listOfCoordinates, valueAtTheIndexZero, valueA
 	listOfCoordinates.append((valueAtTheIndexZero, valueAtTheIndexOne))
 	return listOfCoordinates
 
-def getColorAtParticularCoordinates(screen, xCoordinate, yCoordinate, jewels):
-	#return screen.get_at((xCoordinate, yCoordinate))
+def getColorAtParticularCoordinatesUpOrDown(screen, xCoordinate, yCoordinate, jewels):
+	colorOfTheJewel = getTheColorOfTheJewel(screen, xCoordinate, yCoordinate, jewels)
+	return colorOfTheJewel
+
+def getColorAtParticularCoordinatesRightOrLeft(screen, xCoordinate, yCoordinate, currentJewelsGroup, movingJewelsGroup):
+	'''
+	First search for the jewel in moving jewels group. If found, it returns the color of the jewel. If not found, it return "Black"
+	then search for the jewel in current jewels group
+	'''
+
+	colorOfTheJewel = getTheColorOfTheJewel(screen, xCoordinate, yCoordinate, movingJewelsGroup)
+	if colorOfTheJewel == "Black":
+		colorOfTheJewel = getTheColorOfTheJewel(screen, xCoordinate, yCoordinate, currentJewelsGroup)
+
+	return colorOfTheJewel
+
+def getTheColorOfTheJewel(screen, xCoordinate, yCoordinate, jewels):
 	found = False
 	for jewel in jewels.sprites():
 		if jewel.rect.x == xCoordinate and jewel.rect.y == yCoordinate:
@@ -650,6 +688,7 @@ def getColorAtParticularCoordinates(screen, xCoordinate, yCoordinate, jewels):
 
 	if not found:
 		return "Black"
+
 	
 
 
@@ -668,9 +707,9 @@ def checkForTheSameJewelsUpOrLeft(collisionVariables, movingJewel, settings, cur
 		tempCoordinate = variableCoordinate
 
 		if collisionVariables.collisionDirection == "left":
-			colorAtTheNewRect = getColorAtParticularCoordinates(screen, tempCoordinate, nonVariableCoordinate)
+			colorAtTheNewRect = getColorAtParticularCoordinatesRightOrLeft(screen, tempCoordinate, nonVariableCoordinate, currentJewelsGroup, settings.jewels)
 		if collisionVariables.collisionDirection == "up":
-			colorAtTheNewRect = getColorAtParticularCoordinates(screen, nonVariableCoordinate, tempCoordinate, settings.jewels)
+			colorAtTheNewRect = getColorAtParticularCoordinatesUpOrDown(screen, nonVariableCoordinate, tempCoordinate, settings.jewels)
 
 		
 		variableCoordinate -= collisionVariables.collisionSpeedFactor
@@ -687,23 +726,6 @@ def checkForTheSameJewelsUpOrLeft(collisionVariables, movingJewel, settings, cur
 	return listOfCoordinatesOfJewelsMatched
 
 
-# def setTheColorValue(rgbTuple):
-# 	if rgbTuple == (9, 132, 227):
-# 		return "Blue"
-
-# 	elif rgbTuple == (214, 48, 49):
-# 		return "Red"
-
-# 	elif rgbTuple == (85, 239, 196):
-# 		return "Green"
-
-# 	elif rgbTuple == (234, 181, 67):
-# 		return "Yellow"
-
-# 	else:
-# 		return "Black"
-
-
 ############################################
 def checkForTheSameJewelsDownOrRight(collisionVariables, movingJewel, settings, currentJewelsGroup, screen):
 	
@@ -718,9 +740,9 @@ def checkForTheSameJewelsDownOrRight(collisionVariables, movingJewel, settings, 
 		colorAtTheNewRect = ()
 		trimmedColorAtTheNewRect = ()
 		if collisionVariables.collisionDirection == "right":
-			colorAtTheNewRect = getColorAtParticularCoordinates(screen, tempCoordinate, nonVariableCoordinate)
+			colorAtTheNewRect = getColorAtParticularCoordinatesRightOrLeft(screen, tempCoordinate, nonVariableCoordinate, currentJewelsGroup, settings.jewels)
 		if collisionVariables.collisionDirection == "down":
-			colorAtTheNewRect = getColorAtParticularCoordinates(screen, nonVariableCoordinate, tempCoordinate, currentJewelsGroup)
+			colorAtTheNewRect = getColorAtParticularCoordinatesUpOrDown(screen, nonVariableCoordinate, tempCoordinate, currentJewelsGroup)
 		
 		
 		variableCoordinate += collisionVariables.collisionSpeedFactor
@@ -738,41 +760,37 @@ def checkForTheSameJewelsDownOrRight(collisionVariables, movingJewel, settings, 
 
 
 	
-############################################
-def checkForSameJewelsHorizontallyDownwards(movingJewel, stationaryJewel, settings, screen):
-	listOfCoordinatesDown = []
-	colorOfTheJewel = movingJewel.jewelColorInRGB
-	colorName = movingJewel.jewelName
-	
-	startXCoordinateDown = stationaryJewel.rect.x
-	startYCoordinateDown = stationaryJewel.rect.y
-	colorAtTheNewRect = (0, 0, 0)
-
-	while startYCoordinateDown < settings.screenHeight:
-		tempYCoordinate = startYCoordinateDown
-		colorAtTheNewRect = screen.get_at((startXCoordinateDown, tempYCoordinate))
-		trimmedColorAtTheNewRect = trimTheRGBColorValue(colorAtTheNewRect)
-		startYCoordinateDown += settings.jewelHeight
-
-		if colorOfTheJewel == trimmedColorAtTheNewRect:
-			listOfCoordinatesDown.append((startXCoordinateDown, tempYCoordinate))
-		else:
-			break
-
-	return listOfCoordinatesDown
 
 ############################################
+def removeAJewelFromTheGroupSpecifiedInTheListUpOrDown(listOfCoordinates, jewels):
+	removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, jewels)
+
+def removeAJewelFromTheGroupSpecifiedInTheListLeftOrRight(listOfCoordinates, movingJewelsGroup, currentJewelsGroup):
+	IsJewelRemoved = removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, movingJewelsGroup)
+	if not IsJewelRemoved:
+		removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, currentJewelsGroup)
+
+
 def removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, jewels):
+	removed = False
 	if len(listOfCoordinates) != 0:
 		for xyTuple in listOfCoordinates:
-			getTheJewelAtAParticularCoordinates(xyTuple[0], xyTuple[1], jewels)
+			removed = getTheJewelAtAParticularCoordinates(xyTuple[0], xyTuple[1], jewels)
+
+	return removed
 
 
 ############################################
 def getTheJewelAtAParticularCoordinates(Xcoordinate, Ycoordinate, jewels):
+	found = False
 	for jewel in jewels.sprites():
 		if jewel.rect.x == Xcoordinate and jewel.rect.y == Ycoordinate:
 			jewels.remove(jewel)
+			found = True
+			return found
+
+	if not found:
+		return False
 
 ############################################
 def trimTheRGBColorValue(RGBColorTuple):
@@ -798,16 +816,85 @@ the recent and updated co-ordinates using blit method
 def updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup):
 	screen.fill(settings.backgroundColor)
 	if jewelType == 1:
-		for rectangle in jewels.sprites():
-			rectangle.blitme()
+		if len(settings.jewels) != 0:
+			for rectangle in jewels.sprites():
+				rectangle.blitme()
 
 		if len(currentJewelsGroup) != 0:
 			for rectangle in currentJewelsGroup.sprites():
 				rectangle.blitme()
 
-	pygame.time.delay(100)
+	pygame.time.delay(150)
 	pygame.display.flip()
 
+def moveJewelsDownIfAfterTheRemovalOfMatchedJewels(currentJewelsGroup, settings, screen):
+	
+
+	# while NumberOfJewelsMoved != len(currentJewelsGroup):
+	# 	for jewel in currentJewelsGroup.sprites():
+	# 		IsNextPositionWithinTheBoundary, colorInRGB = getTheColorOfTheNextPosition(jewel.rect.x, jewel.rect.y + settings.jewelSpeedFactor, screen)
+
+	# 		if IsNextPositionWithinTheBoundary and colorInRGB == settings.colorOfTheEmptyRect:
+	# 			jewel.rect.y += settings.jewelSpeedFactor
+	# 			#updateScreen(settings, screen, settings.jewelType, settings.jewels, currentJewelsGroup)
+	# 		else:
+	# 			NumberOfJewelsMoved += 1
+
+	#print('len of jewle ' + str(len(settings.jewels)) + ' and cur ' + str(len(currentJewelsGroup)))
+	count = 0
+	for jewel in currentJewelsGroup.sprites():
+		yCoordinate = findTheYCoordinateAtWhichTheRectIsEmpty(jewel.rect.x, jewel.rect.y, screen)
+		jewel.rect.y = yCoordinate
+
+		jewel.blitme()
+		updateScreen(settings, screen, settings.jewelType, settings.jewels, currentJewelsGroup)
+		#
+		#print('count is ' + str(count) + 'color is ' + colorOfTheNextJewel)
+		#while  colorOfTheNextJewel == "Black":
+			#IsNextPositionWithinTheBoundary, colorInRGB = getTheColorOfTheNextPosition(jewel.rect.x, jewel.rect.y + settings.jewelSpeedFactor, screen)
+			
+			#if IsNextPositionWithinTheBoundary and colorInRGB == settings.colorOfTheEmptyRect:
+			#	NumberOfJewelsMoved += 1
+				#tempRect = jewel.rect
+			#	jewel.rect.y += settings.jewelSpeedFactor
+				#updateScreen(settings, screen, settings.jewelType, settings.jewels, currentJewelsGroup)
+				#pygame.display.flip()
+				#pygame.draw.rect(screen, (250, 250, 250), tempRect)
+				#print(str(jewel.jewelColorInRGB) + ' ' + str(screen.get_at((jewel.rect.x, jewel.rect.y))))
+
+
+
+			# else:
+			# 	colorOfTheNextJewel = "NotBlack"
+
+		#print('count is ' + str(count) + ' NumberOfJewelsMoved ' + str(NumberOfJewelsMoved) + ' color is ' + colorOfTheNextJewel)
+
+	 
+
+	#print('count value is ' + str(count))
+	
+def findTheYCoordinateAtWhichTheRectIsEmpty(xCoordinate, yCoordinate, screen):
+	tempCoordinate = yCoordinate
+	color = "Black"
+	while  color == "Black":
+		IsNextPositionWithinTheBoundary, colorInRGB = getTheColorOfTheNextPosition(xCoordinate, tempCoordinate + 20, screen)
+		if IsNextPositionWithinTheBoundary and colorInRGB == (250, 250, 250, 255):
+			tempCoordinate += 20
+		else:
+			color = "NotBlack"
+
+	return tempCoordinate
+
+
+def getTheColorOfTheNextPosition(xCoordinate, yCoordinate, screen):
+	boundaryValue = screen.get_rect().right
+	IsNextPositionWithinTheBoundary = True
+	if xCoordinate  < boundaryValue and yCoordinate < boundaryValue:
+		return IsNextPositionWithinTheBoundary, screen.get_at((xCoordinate, yCoordinate))
+
+	else:
+		IsNextPositionWithinTheBoundary = False
+		return IsNextPositionWithinTheBoundary, (0, 0, 0, 0)
 
 
 ############################################
