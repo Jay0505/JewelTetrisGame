@@ -828,62 +828,73 @@ def updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup):
 	pygame.display.flip()
 
 def moveJewelsDownIfAfterTheRemovalOfMatchedJewels(currentJewelsGroup, settings, screen):
-	
+	nextPositionEmptyJewel = findTheJewelWhoseNextPositionIsEmptyDownwards(currentJewelsGroup, screen, settings)
 
-	# while NumberOfJewelsMoved != len(currentJewelsGroup):
-	# 	for jewel in currentJewelsGroup.sprites():
-	# 		IsNextPositionWithinTheBoundary, colorInRGB = getTheColorOfTheNextPosition(jewel.rect.x, jewel.rect.y + settings.jewelSpeedFactor, screen)
+	moveJewels = Group()
+	if nextPositionEmptyJewel != -1:
+		xCoordinate = nextPositionEmptyJewel.rect.x
+		yCoordinate = nextPositionEmptyJewel.rect.y
+		moveJewels = findTheJewelsThatHasToBeMovedDownAfterACollision(moveJewels, nextPositionEmptyJewel, screen, settings, currentJewelsGroup)
+		lastYCoordinateWhereThereIsAnEmptyRect = findTheYCoordinateAtWhichTheRectIsEmpty(xCoordinate, yCoordinate, screen)
+		differenceBetweenYCoordinates = lastYCoordinateWhereThereIsAnEmptyRect - yCoordinate
 
-	# 		if IsNextPositionWithinTheBoundary and colorInRGB == settings.colorOfTheEmptyRect:
-	# 			jewel.rect.y += settings.jewelSpeedFactor
-	# 			#updateScreen(settings, screen, settings.jewelType, settings.jewels, currentJewelsGroup)
-	# 		else:
-	# 			NumberOfJewelsMoved += 1
+		for jewel in moveJewels.sprites():
+			jewel.rect.y = differenceBetweenYCoordinates + jewel.rect.y
 
-	#print('len of jewle ' + str(len(settings.jewels)) + ' and cur ' + str(len(currentJewelsGroup)))
-	count = 0
+		
+def findTheJewelWhoseNextPositionIsEmptyDownwards(currentJewelsGroup, screen, settings):
+	FoundAnyJewel = False
 	for jewel in currentJewelsGroup.sprites():
-		yCoordinate = findTheYCoordinateAtWhichTheRectIsEmpty(jewel.rect.x, jewel.rect.y, screen)
-		jewel.rect.y = yCoordinate
+		if jewel.rect.y + settings.jewelSpeedFactor < screen.get_rect().right:
+			colorOfTheNextJewel = screen.get_at((jewel.rect.x, jewel.rect.y + settings.jewelSpeedFactor))
+			if colorOfTheNextJewel == settings.colorOfTheEmptyRect:
+				FoundAnyJewel = True
+				return jewel
 
-		jewel.blitme()
-		updateScreen(settings, screen, settings.jewelType, settings.jewels, currentJewelsGroup)
-		#
-		#print('count is ' + str(count) + 'color is ' + colorOfTheNextJewel)
-		#while  colorOfTheNextJewel == "Black":
-			#IsNextPositionWithinTheBoundary, colorInRGB = getTheColorOfTheNextPosition(jewel.rect.x, jewel.rect.y + settings.jewelSpeedFactor, screen)
-			
-			#if IsNextPositionWithinTheBoundary and colorInRGB == settings.colorOfTheEmptyRect:
-			#	NumberOfJewelsMoved += 1
-				#tempRect = jewel.rect
-			#	jewel.rect.y += settings.jewelSpeedFactor
-				#updateScreen(settings, screen, settings.jewelType, settings.jewels, currentJewelsGroup)
-				#pygame.display.flip()
-				#pygame.draw.rect(screen, (250, 250, 250), tempRect)
-				#print(str(jewel.jewelColorInRGB) + ' ' + str(screen.get_at((jewel.rect.x, jewel.rect.y))))
+	if not FoundAnyJewel:
+		return -1
+
+def findTheJewelsThatHasToBeMovedDownAfterACollision(moveJewels, nextPositionEmptyJewel, screen, settings, currentJewelsGroup):
+	xCoordinate = nextPositionEmptyJewel.rect.x
+	yCoordinate = nextPositionEmptyJewel.rect.y - settings.jewelSpeedFactor
+
+	moveJewels.add(nextPositionEmptyJewel)
+	while xCoordinate >= screen.get_rect().top and yCoordinate >= screen.get_rect().top:
+		colorAtTheNewRect = screen.get_at((xCoordinate, yCoordinate))
+
+		if colorAtTheNewRect != settings.colorOfTheEmptyRect:
+			jewel = returnJewelAtParticularPosition(xCoordinate, yCoordinate, currentJewelsGroup)
+			print('jewel x ' + str(jewel.rect.x) + ' y - ' + str(jewel.rect.y))
+			moveJewels.add(jewel)
+
+		yCoordinate -= settings.jewelSpeedFactor
+
+	print('escaped 1')
+	return moveJewels
 
 
 
-			# else:
-			# 	colorOfTheNextJewel = "NotBlack"
+def returnJewelAtParticularPosition(xCoordinate, yCoordinate, currentJewelsGroup):
+	for jewel in currentJewelsGroup.sprites():
+		if jewel.rect.x == xCoordinate and jewel.rect.y == yCoordinate:
+			return jewel
 
-		#print('count is ' + str(count) + ' NumberOfJewelsMoved ' + str(NumberOfJewelsMoved) + ' color is ' + colorOfTheNextJewel)
 
-	 
 
-	#print('count value is ' + str(count))
-	
+
+
 def findTheYCoordinateAtWhichTheRectIsEmpty(xCoordinate, yCoordinate, screen):
-	tempCoordinate = yCoordinate
+	tempCoordinate = yCoordinate + 20
 	color = "Black"
-	while  color == "Black":
-		IsNextPositionWithinTheBoundary, colorInRGB = getTheColorOfTheNextPosition(xCoordinate, tempCoordinate + 20, screen)
+	while  color == "Black" and tempCoordinate < screen.get_rect().right:
+		IsNextPositionWithinTheBoundary, colorInRGB = getTheColorOfTheNextPosition(xCoordinate, tempCoordinate, screen)
 		if IsNextPositionWithinTheBoundary and colorInRGB == (250, 250, 250, 255):
 			tempCoordinate += 20
 		else:
 			color = "NotBlack"
 
-	return tempCoordinate
+	print('escaped 2')
+	return tempCoordinate - 20
 
 
 def getTheColorOfTheNextPosition(xCoordinate, yCoordinate, screen):
