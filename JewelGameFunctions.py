@@ -154,7 +154,7 @@ def funcResponsibleForMovementOfJewelsAndScreenUpdate(settings, currentJewelsGro
 	checkEvents(settings, screen, jewels, currentJewelsGroup) # Checks for any key press or release events
 	forwardJewels(settings, jewels, jewelType, currentJewelsGroup, screen) # move the jewels in the downward direction
 	moveJewels(settings, screen, jewels, currentJewelsGroup) # move the jewels either right or left based upon the key pressed
-	updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup) # updates the screen with the latest positions of the jewels
+	updateScreen(settings, screen, currentJewelsGroup) # updates the screen with the latest positions of the jewels
 
 ############################################
 def funcResponsibleForCreationAndMovementOfJewels(settings, currentJewelsGroup, screen):
@@ -248,6 +248,11 @@ def updateJewel(settings, currentJewelsGroup, screen):
 			# 	print('center ' + str(jewel.rect.center) + ' x ' + str(jewel.rect.x) + ' y ' + str(jewel.rect.y))
 			jewel.update()
 			checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup, screen)
+			# else:
+			# 	if jewel.reachedBottom and not jewel.moveDown:
+			# 		anyJewelRemoved = checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherLeftAndRight(jewel, settings, currentJewelsGroup, screen)
+			# 		if anyJewelRemoved:
+			# 			removeTheJewelFromMovingJewelsWhichIsMatchedWithOtherJewels(jewel, settings.jewels)
 			if len(settings.jewels) == 0:
 				settings.allTheJewelsReachedBottom = True
 
@@ -286,30 +291,37 @@ the co-ordinates of the three jewels should be as following:
 
 def checkCollisionOfEachJewelWithCurrentJewelsGroup(jewel, settings, currentJewelsGroup, screen): # Vertical Collisions
 	collidedJewelsList = pygame.sprite.spritecollide(jewel, currentJewelsGroup, False)
-	if len(collidedJewelsList) != 0:
+	if len(collidedJewelsList) != 0: # Collision happened between a moving jewel and a stationary jewel
 		
 		if settings.jewelVerticalOrHorizontal == 0:
-			bottom = collidedJewelsList[0].rect.top
-			changeTheSettingsOfTheJewelsCollidedWhenVerticallyAligned(settings, bottom)
+			checkForMatchingForAllTheJewelsWhenVerticallyAligned(settings, currentJewelsGroup, screen)
 		else:
 			jewel.moveDown = False
 			jewel.reachedBottom = True
 			jewel.movingRight = False
 			jewel.movingLeft = False
-			#jewel.rect.bottom = collidedJewelsList[0].rect.top
 			jewel.rect.bottom -= settings.jewelSpeedFactor
 			jewel.blitme()
 
-		checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherUpAndDown(jewel, collidedJewelsList[0], settings, currentJewelsGroup, screen)
-		#print('length of setting jewels ' + str(len(settings.jewels)))
+			checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(jewel, settings, currentJewelsGroup, screen)
+	
+	elif jewel.reachedBottom and not jewel.moveDown:
+		anyJewelRemoved = checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(jewel, settings, currentJewelsGroup, screen)
+		if anyJewelRemoved and settings.jewelVerticalOrHorizontal == 0:
+			checkForMatchingForAllTheJewelsWhenVerticallyAligned(settings, currentJewelsGroup, screen)
 
-			#currentJewelsGroup.add(jewel)
-			#settings.jewels.remove(jewel)
+	# else:
+	# 	if settings.jewelVerticalOrHorizontal == 0:
+	# 		checkForMatchingForAllTheJewelsWhenVerticallyAligned(settings, currentJewelsGroup, screen)
+	# 	else:
+	# 		checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(jewel, settings, currentJewelsGroup, screen)
 
 
-
-
-
+def checkForMatchingForAllTheJewelsWhenVerticallyAligned(settings, currentJewelsGroup, screen):
+	changeTheSettingsOfTheJewelsCollidedWhenVerticallyAligned(settings)
+	for jewel in settings.jewels.sprites():
+		checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(jewel, settings, currentJewelsGroup, screen)
+		
 def detectCollisionsBetweenJewelsWhenMovingSidewards(jewel, currentJewelsGroup):
 	collidedJewelsList = pygame.sprite.spritecollide(jewel, currentJewelsGroup, False)
 	return collidedJewelsList
@@ -333,7 +345,7 @@ def change_The_Settings_Of_Horizontally_Aligned_Jewels_Collided_When_Moving_Side
 		
 
 
-def changeTheSettingsOfTheJewelsCollidedWhenVerticallyAligned(settings, bottom):
+def changeTheSettingsOfTheJewelsCollidedWhenVerticallyAligned(settings):
 	settings.anyJewelReachedBottom = True
 	for jewel in settings.jewels.sprites():
 		jewel.moveDown = False
@@ -381,7 +393,7 @@ def changeTheJewelPositionsWhenUpArrowKeyPressed(settings, screen, currentJewels
 		drawTheShapeAtTheNewCoordinates(screen, jewels[index - 1], shape, colorValueInRGB)
 
 	drawTheShapeAtTheNewCoordinates(screenOfTheIndexOneJewel, jewels[numberOfJewels - 1], indexOneRectangleshape, colorOfTheJewelInRGB)
-	updateScreen(settings, screen, 1, settings.jewels, currentJewelsGroup)
+	updateScreen(settings, screen, currentJewelsGroup)
 
 
 
@@ -408,7 +420,7 @@ def changeTheJewelPositionsWhenDownArrowKeyPressed(settings, screen, currentJewe
 			drawTheShapeAtTheNewCoordinates(screen, jewels[index + 1], shape, colorValueInRGB)
 
 	drawTheShapeAtTheNewCoordinates(screenOfTheLastJewel, jewels[0], lastRectangleshape, colorOfThelastJewel)
-	updateScreen(settings, screen, 1, settings.jewels, currentJewelsGroup)
+	updateScreen(settings, screen, currentJewelsGroup)
 
 
 def drawTheShapeAtTheNewCoordinates(screen, jewel, shapeOfTheJewel, colorOfTheJewelInRGB):
@@ -530,48 +542,72 @@ def groupTheBottomReachedJewelsIntoOne(settings, currentJewelsGroup):
 
 
 
-
 ##########################--------------------------------------------######################################################
 
-def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherUpAndDown(movingJewel, stationaryJewel, settings, currentJewelsGroup, screen):
-	
-	movingJewelTupleList = []
-	stationaryJewelTupleList = []
+def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOther(movingJewel, settings, currentJewelsGroup, screen):
+	anyMatchedJewelsRemovedUpAndDown = checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherUpAndDown(movingJewel, settings, currentJewelsGroup, screen)
+	anyMatchedJewelsRemovedLeftAndRight = checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherLeftAndRight(movingJewel, settings, currentJewelsGroup, screen)
+
+	if anyMatchedJewelsRemovedUpAndDown or anyMatchedJewelsRemovedLeftAndRight:
+		removeTheJewelFromMovingJewelsWhichIsMatchedWithOtherJewels(movingJewel, settings.jewels)
+
+	return anyMatchedJewelsRemovedLeftAndRight or anyMatchedJewelsRemovedUpAndDown
+
+def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherUpAndDown(movingJewel, settings, currentJewelsGroup, screen):
 	up = "up"
 	down = "down"
-	
-	#movingJewelCenter = movingJewel.rect.center
-	movingJewelTupleList.append((movingJewel.rect.x, movingJewel.rect.y))
+	anyMatchedJewelsRemovedUpAndDown = False
 	
 	listOfMatchedJewelsUp = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, up)
 	listOfMatchedJewelsDown = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, down)
 	
+	anyMatchedJewelsRemovedUpAndDown = removeJewelsMathcedUpAndDown(listOfMatchedJewelsUp, listOfMatchedJewelsDown, settings.jewels, currentJewelsGroup)
+	return anyMatchedJewelsRemovedUpAndDown
+
+
+def removeJewelsMathcedUpAndDown(listOfMatchedJewelsUp, listOfMatchedJewelsDown, movingJewels, currentJewels):
+	anyMatchedJewelsRemovedUpAndDown = False
 
 	if (len(listOfMatchedJewelsUp) != 0 or  len(listOfMatchedJewelsDown) != 0) and (len(listOfMatchedJewelsDown) + len(listOfMatchedJewelsUp) >= 2):
 		
-		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsUp, settings.jewels)
-		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsDown, currentJewelsGroup)
+		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsUp, movingJewels)
+		removeAJewelFromTheGroupSpecifiedInTheList(listOfMatchedJewelsDown, currentJewels)
+		anyMatchedJewelsRemovedUpAndDown = True
 
-
-		removeAJewelFromTheGroupSpecifiedInTheList(movingJewelTupleList, settings.jewels)
+	return anyMatchedJewelsRemovedUpAndDown
 
 
 def checkIfThereAreThreeOrMoreSameJewelsAlignedImmediatelyNextToEachOtherLeftAndRight(movingJewel, settings, currentJewelsGroup, screen):
 	right = "right"
 	left = "left"
-
-	movingJewelTupleList = []
-	movingJewelTupleList.append((movingJewel.rect.x, movingJewel.rect.y))
+	anyMatchedJewelsRemovedLeftAndRight = False
 
 	listOfMatchedJewelsLeft = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, left)
 	listOfMatchedJewelsRight = checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, right)
 
+	anyMatchedJewelsRemovedLeftAndRight = removeJewelsMatchedLeftAndRight(listOfMatchedJewelsLeft, listOfMatchedJewelsRight, settings.jewels, currentJewelsGroup)
+
+	return anyMatchedJewelsRemovedLeftAndRight
+	
+
+def removeJewelsMatchedLeftAndRight(listOfMatchedJewelsLeft, listOfMatchedJewelsRight, movingJewels, currentJewelsGroup):
+	anyMatchedJewelsRemovedLeftAndRight = False
 	if (len(listOfMatchedJewelsLeft) != 0 or  len(listOfMatchedJewelsRight) != 0) and (len(listOfMatchedJewelsLeft) + len(listOfMatchedJewelsRight) >= 2):
-		removeAJewelFromTheGroupSpecifiedInTheListLeftOrRight(listOfMatchedJewelsLeft, settings.jewels, currentJewelsGroup)
-		removeAJewelFromTheGroupSpecifiedInTheListLeftOrRight(listOfMatchedJewelsRight, settings.jewels, currentJewelsGroup)
+		removeAJewelFromTheGroupSpecifiedInTheListLeftOrRight(listOfMatchedJewelsLeft, movingJewels, currentJewelsGroup)
+		removeAJewelFromTheGroupSpecifiedInTheListLeftOrRight(listOfMatchedJewelsRight, movingJewels, currentJewelsGroup)
+
+		anyMatchedJewelsRemovedLeftAndRight = True
+
+	return anyMatchedJewelsRemovedLeftAndRight
 
 
-		removeAJewelFromTheGroupSpecifiedInTheList(movingJewelTupleList, settings.jewels)
+		
+
+def removeTheJewelFromMovingJewelsWhichIsMatchedWithOtherJewels(movingJewel, movingJewels):
+	movingJewelTupleList = []
+	movingJewelTupleList.append((movingJewel.rect.x, movingJewel.rect.y))
+
+	removeAJewelFromTheGroupSpecifiedInTheList(movingJewelTupleList, movingJewels)
 
 
 def checkIfThereAreThreeOrMoreMatchedJewels(movingJewel, settings, currentJewelsGroup, screen, direction):
@@ -766,8 +802,8 @@ def removeAJewelFromTheGroupSpecifiedInTheListUpOrDown(listOfCoordinates, jewels
 	removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, jewels)
 
 def removeAJewelFromTheGroupSpecifiedInTheListLeftOrRight(listOfCoordinates, movingJewelsGroup, currentJewelsGroup):
-	IsJewelRemoved = removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, movingJewelsGroup)
-	if not IsJewelRemoved:
+	IsJewelRemovedFromMovingJewelsGroup = removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, movingJewelsGroup)
+	if not IsJewelRemovedFromMovingJewelsGroup:
 		removeAJewelFromTheGroupSpecifiedInTheList(listOfCoordinates, currentJewelsGroup)
 
 
@@ -813,33 +849,51 @@ the recent and updated co-ordinates using blit method
 -- pygame.display.flip() method updates the screen with the recent updates.
 '''
 
-def updateScreen(settings, screen, jewelType, jewels, currentJewelsGroup):
+def updateScreen(settings, screen, currentJewelsGroup):
 	screen.fill(settings.backgroundColor)
-	if jewelType == 1:
-		if len(settings.jewels) != 0:
-			for rectangle in jewels.sprites():
-				rectangle.blitme()
 
-		if len(currentJewelsGroup) != 0:
-			for rectangle in currentJewelsGroup.sprites():
-				rectangle.blitme()
+	if len(settings.jewels) != 0:
+		for rectangle in settings.jewels.sprites():
+			rectangle.blitme()
+
+	if len(currentJewelsGroup) != 0:
+		for rectangle in currentJewelsGroup.sprites():
+			rectangle.blitme()
 
 	pygame.time.delay(150)
 	pygame.display.flip()
 
 def moveJewelsDownIfAfterTheRemovalOfMatchedJewels(currentJewelsGroup, settings, screen):
-	nextPositionEmptyJewel = findTheJewelWhoseNextPositionIsEmptyDownwards(currentJewelsGroup, screen, settings)
+	isThereAnyNextPositionEmptyJewel = True
+	while isThereAnyNextPositionEmptyJewel:
+		nextPositionEmptyJewel = findTheJewelWhoseNextPositionIsEmptyDownwards(currentJewelsGroup, screen, settings)
 
-	moveJewels = Group()
-	if nextPositionEmptyJewel != -1:
-		xCoordinate = nextPositionEmptyJewel.rect.x
-		yCoordinate = nextPositionEmptyJewel.rect.y
-		moveJewels = findTheJewelsThatHasToBeMovedDownAfterACollision(moveJewels, nextPositionEmptyJewel, screen, settings, currentJewelsGroup)
-		lastYCoordinateWhereThereIsAnEmptyRect = findTheYCoordinateAtWhichTheRectIsEmpty(xCoordinate, yCoordinate, screen)
-		differenceBetweenYCoordinates = lastYCoordinateWhereThereIsAnEmptyRect - yCoordinate
+		if nextPositionEmptyJewel == -1:
+			isThereAnyNextPositionEmptyJewel = False
 
-		for jewel in moveJewels.sprites():
-			jewel.rect.y = differenceBetweenYCoordinates + jewel.rect.y
+		else:
+			moveJewels = Group()
+			xCoordinate = nextPositionEmptyJewel.rect.x
+			yCoordinate = nextPositionEmptyJewel.rect.y
+			moveJewels = findTheJewelsThatHasToBeMovedDownAfterACollision(moveJewels, nextPositionEmptyJewel, screen, settings, currentJewelsGroup)
+			lastYCoordinateWhereThereIsAnEmptyRect = findTheYCoordinateAtWhichTheRectIsEmpty(xCoordinate, yCoordinate, screen)
+			differenceBetweenYCoordinates = lastYCoordinateWhereThereIsAnEmptyRect - yCoordinate
+
+			for jewel in moveJewels.sprites():
+				jewel.rect.y = differenceBetweenYCoordinates + jewel.rect.y
+
+			updateScreen(settings, screen, currentJewelsGroup)
+
+			# moveJewels = Group()
+			# if nextPositionEmptyJewel != -1:
+			# 	xCoordinate = nextPositionEmptyJewel.rect.x
+			# 	yCoordinate = nextPositionEmptyJewel.rect.y
+			# 	moveJewels = findTheJewelsThatHasToBeMovedDownAfterACollision(moveJewels, nextPositionEmptyJewel, screen, settings, currentJewelsGroup)
+			# 	lastYCoordinateWhereThereIsAnEmptyRect = findTheYCoordinateAtWhichTheRectIsEmpty(xCoordinate, yCoordinate, screen)
+			# 	differenceBetweenYCoordinates = lastYCoordinateWhereThereIsAnEmptyRect - yCoordinate
+
+			# 	for jewel in moveJewels.sprites():
+			# 		jewel.rect.y = differenceBetweenYCoordinates + jewel.rect.y
 
 		
 def findTheJewelWhoseNextPositionIsEmptyDownwards(currentJewelsGroup, screen, settings):
@@ -864,12 +918,10 @@ def findTheJewelsThatHasToBeMovedDownAfterACollision(moveJewels, nextPositionEmp
 
 		if colorAtTheNewRect != settings.colorOfTheEmptyRect:
 			jewel = returnJewelAtParticularPosition(xCoordinate, yCoordinate, currentJewelsGroup)
-			print('jewel x ' + str(jewel.rect.x) + ' y - ' + str(jewel.rect.y))
 			moveJewels.add(jewel)
 
 		yCoordinate -= settings.jewelSpeedFactor
 
-	print('escaped 1')
 	return moveJewels
 
 
@@ -893,7 +945,6 @@ def findTheYCoordinateAtWhichTheRectIsEmpty(xCoordinate, yCoordinate, screen):
 		else:
 			color = "NotBlack"
 
-	print('escaped 2')
 	return tempCoordinate - 20
 
 
